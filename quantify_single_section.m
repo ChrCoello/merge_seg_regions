@@ -1,15 +1,17 @@
-function [obj_stats,seg_stats] = quantify_single_section(atlas,seg,slice,atlas_lbl,slice_json,slice_txt,output_dir,obj_lbl)
+function [obj_stats,seg_stats] = quantify_single_section(atlas,seg,slice,...
+    atlas_lbl,output_dir,obj_lbl,metadata)
 %QUANTIFY_SINGLE_SECTION quantify objects in a section
 % Takes resolution from the original text file
 % Calculates the downscale ratio using original and downscale height and
 % weight
 % Read the Atlas cut (ReadSlice.m), resize it to the right size
-% Read the segmentation and create a binary image using the information 
-% from the label of the object of interest 
+% Read the segmentation and create a binary image using the information
+% from the label of the object of interest
 % Remove unique point using a morphological operation (opening) with a
 % diamond kernel of size 1
 % Count individual connected objects
 % Populate teh JSON file with properties of each individual object
+% Plot the output
 
 
 %% Read the slice
@@ -18,12 +20,10 @@ slice_im_size = size(slice_im);
 
 %% Get the pixel area in the downsampled image
 % Harvest the original resolution in the text file
-txt_section   = load_txt(slice_txt,2,7); 
-pixel_area_up = txt_section{2,3} * txt_section{3,3};
+pixel_area_up = metadata.x_pixel_size*metadata.y_pixel_size;
 % Harvest the original height and width
-json_section = loadjson(slice_json);
-area_up = json_section.input.height * json_section.input.width;
-area_dw = json_section.output.height * json_section.output.width;
+area_up = metadata.width * metadata.height;
+area_dw = slice_im_size(1) * slice_im_size(2);
 % Get our data on
 pixel_area_dw = pixel_area_up*area_up/area_dw;
 
@@ -38,10 +38,10 @@ for iR = 1:length(lbl_lst)
     seg_stats(iR).idx   = lbl_idx(iR);
     seg_stats(iR).pixel = lbl_pixel(iR);
     seg_stats(iR).area  = lbl_pixel(iR) * pixel_area_dw;
-    seg_stats(iR).area_units = [txt_section{2,4} 'x' txt_section{3,4}];
+    seg_stats(iR).area_units = [metadata.pixel_size_unit 'x' metadata.pixel_size_unit];
 end
 
-%% Read the segmentation and create a plaque binary file
+%% Read the segmentation and create a object binary file
 [~,sl_name,~] = fileparts(seg);
 seg_im = imread(seg);
 seg_im_size   = size(seg_im);
@@ -62,9 +62,10 @@ assert(all(atlas_im_size(1:2)==seg_im_size(1:2)),...
     'Size atlas (%d %d) is different from size seg (%d %d)',...
     atlas_im_size(1),atlas_im_size(2),seg_im_size(1),seg_im_size(2));
 
-%% Returns measurements for the set of properties specified by 
+%% Returns measurements for the set of properties specified by
 % properties for each connected component (object) in the binary image
-stats  = regionprops(logical(obj_im_cl),'Centroid','Area','BoundingBox');
+stats  = regionprops(logical(obj_im_cl),'Centroid','Area','BoundingBox',...
+              'Orientation', 'MajorAxisLength','MinorAxisLength');
 statsR = regionprops(logical(obj_im_cl),slice_im(:,:,1),'MeanIntensity');
 statsG = regionprops(logical(obj_im_cl),slice_im(:,:,2),'MeanIntensity');
 statsB = regionprops(logical(obj_im_cl),slice_im(:,:,3),'MeanIntensity');
@@ -73,19 +74,32 @@ n_obj = length(stats)-1;
 iR = 0;
 for iL = 1:n_obj
     %% Count the cells
-    % only include it if there is an tlas label associated to the location
-    % of the centroid of the plaque
+    % only include it if there is an atlas label associated to the location
+    % of the centroid of the object
     if atlas_im(round(stats(iL).Centroid(2)),round(stats(iL).Centroid(1)))>0
         iR = iR + 1;
         %label connected regions
-        obj_stats(iR).plaque_pixel    = stats(iL).Area; %#ok<*AGROW>
-        obj_stats(iR).plaque_area     = stats(iL).Area * pixel_area_dw;
-        obj_stats(iR).plaque_area_units = [txt_section{2,4} 'x' txt_section{3,4}];
-        obj_stats(iR).plaque_centroid = stats(iL).Centroid;
-        obj_stats(iR).plaque_bb       = stats(iL).BoundingBox;
-        obj_stats(iR).plaque_meanR    = statsR(iL).MeanIntensity;
-        obj_stats(iR).plaque_meanG    = statsG(iL).MeanIntensity;
-        obj_stats(iR).plaque_meanB    = statsB(iL).MeanIntensity;
+        % Area properties
+        obj_stats(iR).object_pixel    = stats(iL).Area; %#ok<*AGROW>
+        obj_stats(iR).object_area     = stats(iL).Area * pixel_area_dw;
+        obj_stats(iR).object_area_units = [metadata.pixel_size_unit 'x' metadata.pixel_size_unit];
+        %Location properties
+        obj_stats(iR).object_centroid_pixel = stats(iL).Centroid;
+        obj_stats(iR).object_centroid_atlas =...
+            metadata.pixel_to_atlas_mat*[stats(iL).Centroid(1);1;stats(iL).Centroid(2)];
+        obj_stats(iR).object_centroid_atlas_units = metadata.pixel_size_unit;
+        %obj_stats(iR).object_bb       = stats(iL).BoundingBox;
+        %Shape properties
+        obj_stats(iR).object_ori      = stats(iL).Orientation;
+        obj_stats(iR).object_major_al_pixel = stats(iL).MajorAxisLength;
+        obj_stats(iR).object_major_al_atlas = stats(iL).MajorAxisLength*metadata.x_pixel_size;
+        obj_stats(iR).object_minor_al_pixel = stats(iL).MinorAxisLength;
+        obj_stats(iR).object_minor_al_atlas = stats(iL).MinorAxisLength*metadata.x_pixel_size;
+        % Intensity properties
+        obj_stats(iR).object_meanR    = statsR(iL).MeanIntensity;
+        obj_stats(iR).object_meanG    = statsG(iL).MeanIntensity;
+        obj_stats(iR).object_meanB    = statsB(iL).MeanIntensity;
+        % Region belonging properties
         obj_stats(iR).region_lbl      = atlas_im(round(stats(iL).Centroid(2)),round(stats(iL).Centroid(1)));
         obj_stats(iR).region_name     = lbl_lst{lbl_idx==obj_stats(iR).region_lbl};
         obj_stats(iR).region_rgb      = squeeze(atlas_im_rgb(round(stats(iL).Centroid(2)),round(stats(iL).Centroid(1)),:));
@@ -93,21 +107,37 @@ for iL = 1:n_obj
     end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%
-% Display the result for this slice
+% Display the result for this slice usng ellipses
+phi = linspace(0,2*pi,50);
+cosphi = cos(phi);
+sinphi = sin(phi);
+%
 hF=figure;
 imshow(slice_im,'Border','tight');
 hold on
-centroids = cat(1, obj_stats.plaque_centroid);
-% clr=jet(length(centroids)+1);
+centroids = cat(1, obj_stats.object_centroid_pixel);
+%
 for iC=1:length(centroids)
     plot(centroids(iC,1),centroids(iC,2),'Color',obj_stats(iC).region_rgb,'Marker','x','MarkerSize',3);
-    x=zeros([1 5]);
-    y=zeros([1 5]);
-    x(:)=obj_stats(iC).plaque_bb(1);
-    y(:)=obj_stats(iC).plaque_bb(2);
-    x(2:3)=obj_stats(iC).plaque_bb(1)+obj_stats(iC).plaque_bb(3);
-    y(3:4)=obj_stats(iC).plaque_bb(2)+obj_stats(iC).plaque_bb(4);
+    %
+    xbar = centroids(iC,1);
+    ybar = centroids(iC,2);
+
+    a = obj_stats(iC).object_major_al_pixel/2;
+    b = obj_stats(iC).object_minor_al_pixel/2;
+
+    theta = pi*obj_stats(iC).object_ori/180;
+    R = [ cos(theta)   sin(theta)
+         -sin(theta)   cos(theta)];
+
+    xy = [a*cosphi; b*sinphi];
+    xy = R*xy;
+
+    x = xy(1,:) + xbar;
+    y = xy(2,:) + ybar;
+    %
     plot(x,y,'Color',obj_stats(iC).region_rgb,'LineWidth',1);
+    %
 end
 hold off
 %
@@ -153,14 +183,14 @@ hF4=figure;
 C=imlincomb(0.4,atlas_im_rgb,0.6,slice_im);
 imshow(C,'Border','tight');
 hold on
-centroids = cat(1, obj_stats.plaque_centroid);
+centroids = cat(1, obj_stats.object_centroid_pixel);
 %
 for iC=1:length(centroids)
     plot(centroids(iC,1),centroids(iC,2),'Color',[0 0 0],'Marker','x','MarkerSize',3);
 end
 hold off
 F4 = getframe(hF4);
-imwrite(F4.cdata,fullfile(output_dir,[sl_name '_blend_plaques.png']));
+imwrite(F4.cdata,fullfile(output_dir,[sl_name '_blend_objects.png']));
 close(hF4);
 
 % Prepare the output
@@ -169,87 +199,4 @@ seg_stats = seg_stats';
 %
 return
 
-
-function struct_txt = load_txt(filename, startRow, endRow)
-%IMPORTFILE Import text from the automatically generated text file that
-%contains the resolution of the original file
-%   
-% Example:
-%   tg2576m2871D1s054 = importfile('tg2576_m287_1D1_s054.txt', 2, 7);
-%
-%    See also TEXTSCAN.
-% Auto-generated by MATLAB on 2017/08/15 11:39:55
-
-% Initialize variables.
-delimiter = ' ';
-if nargin<=2
-    startRow = 2;
-    endRow = 7;
-end
-
-% Read columns of data as text:
-% For more information, see the TEXTSCAN documentation.
-formatSpec = '%s%s%s%s%s%s%[^\n\r]';
-
-% Open the text file.
-fileID = fopen(filename,'r');
-
-% Read columns of data according to the format.
-% This call is based on the structure of the file used to generate this
-% code. If an error occurs for a different file, try regenerating the code
-% from the Import Tool.
-dataArray = textscan(fileID, formatSpec, endRow(1)-startRow(1)+1, 'Delimiter', delimiter, 'MultipleDelimsAsOne', true, 'HeaderLines', startRow(1)-1, 'ReturnOnError', false, 'EndOfLine', '\r\n');
-for block=2:length(startRow)
-    frewind(fileID);
-    dataArrayBlock = textscan(fileID, formatSpec, endRow(block)-startRow(block)+1, 'Delimiter', delimiter, 'MultipleDelimsAsOne', true, 'HeaderLines', startRow(block)-1, 'ReturnOnError', false, 'EndOfLine', '\r\n');
-    for col=1:length(dataArray)
-        dataArray{col} = [dataArray{col};dataArrayBlock{col}];
-    end
-end
-
-% Close the text file.
-fclose(fileID);
-
-% Convert the contents of columns containing numeric text to numbers.
-% Replace non-numeric text with NaN.
-raw = repmat({''},length(dataArray{1}),length(dataArray)-1);
-for col=1:length(dataArray)-1
-    raw(1:length(dataArray{col}),col) = dataArray{col};
-end
-numericData = NaN(size(dataArray{1},1),size(dataArray,2));
-
-% Converts text in the input cell array to numbers. Replaced non-numeric
-% text with NaN.
-rawData = dataArray{3};
-for row=1:size(rawData, 1)
-    % Create a regular expression to detect and remove non-numeric prefixes and
-    % suffixes.
-    regexstr = '(?<prefix>.*?)(?<numbers>([-]*(\d+[\,]*)+[\.]{0,1}\d*[eEdD]{0,1}[-+]*\d*[i]{0,1})|([-]*(\d+[\,]*)*[\.]{1,1}\d+[eEdD]{0,1}[-+]*\d*[i]{0,1}))(?<suffix>.*)';
-    try
-        result = regexp(rawData{row}, regexstr, 'names');
-        numbers = result.numbers;
-        
-        % Detected commas in non-thousand locations.
-        invalidThousandsSeparator = false;
-        if any(numbers==',')
-            thousandsRegExp = '^\d+?(\,\d{3})*\.{0,1}\d*$';
-            if isempty(regexp(numbers, thousandsRegExp, 'once'))
-                numbers = NaN;
-                invalidThousandsSeparator = true;
-            end
-        end
-        % Convert numeric text to numbers.
-        if ~invalidThousandsSeparator
-            numbers = textscan(strrep(numbers, ',', ''), '%f');
-            numericData(row, 3) = numbers{1};
-            raw{row, 3} = numbers{1};
-        end
-    catch me
-    end
-end
-
-% 
-struct_txt = raw;
-
-return
 

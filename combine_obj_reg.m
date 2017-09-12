@@ -1,4 +1,4 @@
-function [stats_json_filename,stats_xls_filename] = combine_obj_seg(varargin)
+function [stats_json_filename,stats_xls_filename] = combine_obj_reg(varargin)
 %COMBINE_OBJ_SEG Combines objects from same regions
 % Takes as input JSON file saved by quantifyFullDataset
 %  - List individual regions in the JSON file and calculate total area over
@@ -11,9 +11,10 @@ function [stats_json_filename,stats_xls_filename] = combine_obj_seg(varargin)
 
 % Parse inputs
 if nargin==0
-    uigetfile('*.json','Please provide with the JSON file containing the result of the quantify_dataset.m');
+    [file_name,path_name] = uigetfile('*.json','Please provide with the JSON file containing the result of the quantify_dataset.m');
+    json_file = fullfile(path_name,file_name);
 elseif nargin==1
-    json_file=varargin{1};
+    json_file = varargin{1};
 else
     error('Too many inputs');
 end
@@ -21,7 +22,7 @@ end
 [json_path,json_filename,~] = fileparts(json_file);
 json_data = loadjson(json_file);
 % all base region
-obj_cell = json_data.plaques{1};
+obj_cell = json_data.objects{1};
 reg_cell = json_data.regions{1};
 %
 obj_struct = [obj_cell{:}];
@@ -65,17 +66,17 @@ end
 obj_name_lst = {obj_struct(:).region_name};
 [obj_name_lst_unq,idx_obj_name_lst_unq,~] = unique(obj_name_lst,'sorted');
 %
-obj_area_lst       = [obj_struct(:).plaque_area];
-obj_area_units_lst = {obj_struct(:).plaque_area_units};
+obj_area_lst       = [obj_struct(:).object_area];
+obj_area_units_lst = {obj_struct(:).object_area_units};
 %
-obj_pixel_lst = [obj_struct(:).plaque_pixel];
+obj_pixel_lst = [obj_struct(:).object_pixel];
 %
 obj_idx_lst     = [obj_struct(:).region_lbl];
 obj_idx_lst_unq = obj_idx_lst(idx_obj_name_lst_unq);
 %
-% obj_mean_r = [obj_struct(:).plaque_meanR];
-% obj_mean_g = [obj_struct(:).plaque_meanG];
-% obj_mean_b = [obj_struct(:).plaque_meanB];
+% obj_mean_r = [obj_struct(:).object_meanR];
+% obj_mean_g = [obj_struct(:).object_meanG];
+% obj_mean_b = [obj_struct(:).object_meanB];
 %
 % Check units
 if length(unique(obj_area_units_lst))==1
