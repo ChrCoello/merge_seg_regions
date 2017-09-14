@@ -3,7 +3,12 @@ function [pr,lbl_lst,lbl_idx,lbl_pixel] = colorAtlasImages(segIm,lblFile)
 % lblFile : path to label file
 
 %% Read the labels
-annotation = importITKLabelfile(lblFile);
+if exist(lblFile,'file')
+    annotation = importITKLabelfile(lblFile);
+else
+    error('colorAtlasImages:LabelFileNotFound',['Unable to find the label file named %s.',...
+        'Please be dure that the path is correct'])
+end
 lbl_clr = table2array(annotation(:,1:4));
 lbl_nm  = table2cell(annotation(:,5));
 
