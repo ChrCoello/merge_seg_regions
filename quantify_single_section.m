@@ -85,16 +85,15 @@ for iL = 1:n_obj
         obj_stats(iR).object_area_units = [metadata.pixel_size_unit 'x' metadata.pixel_size_unit];
         %Location properties
         obj_stats(iR).object_centroid_pixel = stats(iL).Centroid;
+        
         obj_stats(iR).object_centroid_atlas =...
-            metadata.pixel_to_atlas_mat*[stats(iL).Centroid(1);1;stats(iL).Centroid(2)];
-        obj_stats(iR).object_centroid_atlas_units = metadata.pixel_size_unit;
+            metadata.pixel_to_atlas_mat*[1-stats(iL).Centroid(1)/seg_im_size(1);1;1-stats(iL).Centroid(2)/seg_im_size(2)];
+        obj_stats(iR).object_centroid_atlas_units = 'ABA voxel';
         %obj_stats(iR).object_bb       = stats(iL).BoundingBox;
         %Shape properties
         obj_stats(iR).object_ori      = stats(iL).Orientation;
         obj_stats(iR).object_major_al_pixel = stats(iL).MajorAxisLength;
-        obj_stats(iR).object_major_al_atlas = stats(iL).MajorAxisLength*metadata.x_pixel_size;
         obj_stats(iR).object_minor_al_pixel = stats(iL).MinorAxisLength;
-        obj_stats(iR).object_minor_al_atlas = stats(iL).MinorAxisLength*metadata.x_pixel_size;
         % Intensity properties
         obj_stats(iR).object_meanR    = statsR(iL).MeanIntensity;
         obj_stats(iR).object_meanG    = statsG(iL).MeanIntensity;
@@ -103,7 +102,9 @@ for iL = 1:n_obj
         obj_stats(iR).region_lbl      = atlas_im(round(stats(iL).Centroid(2)),round(stats(iL).Centroid(1)));
         obj_stats(iR).region_name     = lbl_lst{lbl_idx==obj_stats(iR).region_lbl};
         obj_stats(iR).region_rgb      = squeeze(atlas_im_rgb(round(stats(iL).Centroid(2)),round(stats(iL).Centroid(1)),:));
+        % Slice information
         obj_stats(iR).slice_name      = sl_name;
+        obj_stats(iR).slice_size      = seg_im_size;
     end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%
