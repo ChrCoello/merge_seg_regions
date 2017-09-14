@@ -98,7 +98,7 @@ atlas_coord_json = loadjson(atlas_json_fn);
 sections_coord = [atlas_coord_json.slice{:}];
 
 %% Original dir
-ori_dir_ctn = dir([slice_dir '*.tif']);
+ori_dir_ctn = dir([original_dir '*.tif']);
 
 %% Loop on all the images
 n_objects = 0;
@@ -112,20 +112,23 @@ for iS = 1:n_slice
     if strfind(seg_name_orig,'Object Prediction')
         seg_name = seg_name_orig(1:strfind(seg_name_orig,'Object Prediction')-2);
     end
+    % Get the index of the image: s followed by three digits 
+    seg_id = seg_name(end-4:end);
+    %
     seg_name_file = fullfile(seg_dir,seg_name_orig);
     % Atlas
-    atlas_slices = atlas_dir_ctn(~cellfun('isempty',strfind({atlas_dir_ctn(:).name},seg_name)));
+    atlas_slices = atlas_dir_ctn(~cellfun('isempty',strfind({atlas_dir_ctn(:).name},seg_id)));
     %
     atlas_name = atlas_slices(~cellfun('isempty',strfind({atlas_slices(:).name},'.bin'))).name;
     atlas_name_file = fullfile(atlas_dir,atlas_name);
     % Section
-    slice_name = slice_dir_ctn(~cellfun('isempty',strfind({slice_dir_ctn(:).name},seg_name))).name;
+    slice_name = slice_dir_ctn(~cellfun('isempty',strfind({slice_dir_ctn(:).name},seg_id))).name;
     slice_name_file = fullfile(slice_dir,slice_name);
     % Original filename
-    ori_name = ori_dir_ctn(~cellfun('isempty',strfind({ori_dir_ctn(:).name},seg_name))).name;
+    ori_name = ori_dir_ctn(~cellfun('isempty',strfind({ori_dir_ctn(:).name},seg_id))).name;
     ori_name_file = fullfile(original_dir,ori_name);
     %
-    ori_name_file_txt = fullfile(slice_dir,[ori_name(1:end-4) '.txt']);
+    ori_name_file_txt = fullfile(original_dir,[ori_name(1:end-4) '.txt']);
     if ~exist(ori_name_file_txt,'file')
         % original tif
         try
@@ -143,7 +146,7 @@ for iS = 1:n_slice
                 'Unable to fetch the appropriate metadata from original tiff file');
         end
     else
-        txt_section = load_txt(slice_txt);
+        txt_section = load_txt(ori_name_file_txt);
         if txt_section{2,3}~=txt_section{3,3}
             error('non isotropic pixel resolution');
         else
@@ -173,8 +176,8 @@ for iS = 1:n_slice
     regions = struct2table(reg_stats);
     %
     warning('off','MATLAB:xlswrite:AddSheet');
-    writetable(objects,output_xls_obj_ind,'Sheet',slice_name(end-7:end-4));
-    writetable(regions,output_xls_reg_ind,'Sheet',slice_name(end-7:end-4));
+    writetable(objects,output_xls_obj_ind,'Sheet',seg_id);
+    writetable(regions,output_xls_reg_ind,'Sheet',seg_id);
     %
     fprintf(' -- Analyzing slice #%d / %d -- done\n',iS,n_slice);
 end
