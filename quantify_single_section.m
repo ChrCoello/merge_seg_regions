@@ -86,10 +86,11 @@ for iL = 1:n_obj
         %Location properties
         obj_stats(iR).object_centroid_pixel = stats(iL).Centroid;
         
-        obj_stats(iR).object_centroid_atlas =...
-            metadata.pixel_to_atlas_mat*[1-stats(iL).Centroid(1)/seg_im_size(1);1;1-stats(iL).Centroid(2)/seg_im_size(2)];
-        obj_stats(iR).object_centroid_atlas_units = 'ABA voxel';
-        %obj_stats(iR).object_bb       = stats(iL).BoundingBox;
+        % TO DO COORDINATE in ABA space
+        %obj_stats(iR).object_centroid_atlas =...
+            %metadata.pixel_to_atlas_mat*[1-stats(iL).Centroid(1)/seg_im_size(1);1;1-stats(iL).Centroid(2)/seg_im_size(2)];
+        %obj_stats(iR).object_centroid_atlas_units = 'ABA voxel';
+        
         %Shape properties
         obj_stats(iR).object_ori      = stats(iL).Orientation;
         obj_stats(iR).object_major_al_pixel = stats(iL).MajorAxisLength;
