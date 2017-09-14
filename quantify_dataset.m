@@ -103,7 +103,7 @@ ori_dir_ctn = dir([slice_dir '*.tif']);
 %% Loop on all the images
 n_objects = 0;
 n_regions = 0;
-for iS = n_slice:n_slice
+for iS = 1:n_slice
     %
     fprintf(1,' -- Analyzing slice #%d / %d\n',iS,n_slice);
     %
