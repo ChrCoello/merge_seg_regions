@@ -82,7 +82,7 @@ n_slice = length(seg_dir_ctn);
 GlobalStats.n_slices = n_slice;
 GlobalStats.n_objects = NaN;
 GlobalStats.n_regions = NaN;
-fprintf(1,'\nTotal number of section detected: %d',n_slice);
+fprintf(1,'\nTotal number of section detected: %d\n',n_slice);
 %%
 atlas_dir_ctn = dir(atlas_dir);
 atlas_dir_ctn = atlas_dir_ctn(~[atlas_dir_ctn(:).isdir]);
@@ -105,7 +105,7 @@ n_objects = 0;
 n_regions = 0;
 for iS = n_slice:n_slice
     %
-    fprintf(1,'\n -- Analyzing slice #%d / %d',iS,n_slice);
+    fprintf(1,' -- Analyzing slice #%d / %d\n',iS,n_slice);
     %
     seg_name_orig = seg_dir_ctn(iS).name;
     % Remove Object Prediction from the file name if its finds it
@@ -121,21 +121,23 @@ for iS = n_slice:n_slice
     % Section
     slice_name = slice_dir_ctn(~cellfun('isempty',strfind({slice_dir_ctn(:).name},seg_name))).name;
     slice_name_file = fullfile(slice_dir,slice_name);
+    % Original filename
+    ori_name = ori_dir_ctn(~cellfun('isempty',strfind({ori_dir_ctn(:).name},seg_name))).name;
+    ori_name_file = fullfile(original_dir,ori_name);
     %
-    slice_txt       = fullfile(slice_dir,[slice_name(1:end-4) '.txt']);
-    if ~exist(slice_txt,'file')
-        % orignal tif
+    ori_name_file_txt = fullfile(slice_dir,[ori_name(1:end-4) '.txt']);
+    if ~exist(ori_name_file_txt,'file')
+        % original tif
         try
-        ori_name = ori_dir_ctn(~cellfun('isempty',strfind({ori_dir_ctn(:).name},seg_name))).name;
-        ori_metadata = imfinfo(fullfile(original_dir,ori_name));
-        metadata.width  = ori_metadata.Width;
-        metadata.height = ori_metadata.Height;
-        xresolution = unit_convert(ori_metadata.XResolution,ori_metadata.ResolutionUnit,'um');
-        yresolution = unit_convert(ori_metadata.YResolution,ori_metadata.ResolutionUnit,'um');
-        %         metadata.resolution_unit = 'pixel/um';
-        metadata.x_pixel_size = 1/xresolution;
-        metadata.y_pixel_size = 1/yresolution;
-        metadata.pixel_size_unit = 'um/pixel';
+            ori_metadata = imfinfo(ori_name_file);
+            metadata.width  = ori_metadata.Width;
+            metadata.height = ori_metadata.Height;
+            xresolution = unit_convert(ori_metadata.XResolution,ori_metadata.ResolutionUnit,'um');
+            yresolution = unit_convert(ori_metadata.YResolution,ori_metadata.ResolutionUnit,'um');
+            %         metadata.resolution_unit = 'pixel/um';
+            metadata.x_pixel_size = 1/xresolution;
+            metadata.y_pixel_size = 1/yresolution;
+            metadata.pixel_size_unit = 'um/pixel';
         catch
             error('quantify_dataset:fetching_metadata',...
                 'Unable to fetch the appropriate metadata from original tiff file');
@@ -174,7 +176,7 @@ for iS = n_slice:n_slice
     writetable(objects,output_xls_obj_ind,'Sheet',slice_name(end-7:end-4));
     writetable(regions,output_xls_reg_ind,'Sheet',slice_name(end-7:end-4));
     %
-    fprintf('\n -- Analyzing slice #%d / %d -- done',iS,n_slice);
+    fprintf(' -- Analyzing slice #%d / %d -- done\n',iS,n_slice);
 end
 % if exist('RemoveSheet123','file')==2
 %     RemoveSheet123(output_xls_obj_ind);
@@ -197,7 +199,7 @@ writetable(objects,output_xls_obj);
 writetable(regions,output_xls_reg);
 %
 t_p = toc;
-fprintf(1,'\n\nAnalysis completed in %.0f seconds\n',t_p);
+fprintf(1,'\nAnalysis completed in %.0f seconds\n',t_p);
 return
 
 function struct_txt = load_txt(filename, startRow, endRow)
