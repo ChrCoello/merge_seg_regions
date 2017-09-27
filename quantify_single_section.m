@@ -14,20 +14,29 @@ function [obj_stats,seg_stats] = quantify_single_section(atlas,seg,slice,...
 % Plot the output
 
 
-%% Read the slice
+%%% Read the slice
 slice_im = imread(slice);
 slice_im_size = size(slice_im);
 
-%% Get the pixel area in the downsampled image
-% Harvest the original resolution in the text file
-pixel_area_up = metadata.x_pixel_size*metadata.y_pixel_size;
-% Harvest the original height and width
-area_up = metadata.width * metadata.height;
-area_dw = slice_im_size(1) * slice_im_size(2);
-% Get our data on
-pixel_area_dw = pixel_area_up*area_up/area_dw;
+%%% Get the pixel area in the downsampled image (def: no info)
+is_spinfo = 0;
+if ~(isempty(metadata.x_pixel_size) && isempty(metadata.y_pixel_size))
+    % we have some info
+    is_spinfo = 1;
+    if ~(isempty(metadata.width) && isempty(metadata.height))
+        % area
+       area_up = metadata.width_ori * metadata.height_ori;
+       area_dw = slice_im_size(1) * slice_im_size(2); 
+       % pixel
+       pixel_area_up = metadata.x_pixel_size_ori*metadata.y_pixel_size_ori;
+       % all good
+       pixel_area_dw = pixel_area_up*area_up/area_dw; 
+    else
+       pixel_area_dw = metadata.x_pixel_size * metadata.y_pixel_size;
+    end
+end
 
-%% Read the atlas segmentation and color the slice
+%%%  Read the atlas segmentation and color the slice
 atlas_im = ReadSlice(atlas);
 atlas_im = imresize(atlas_im,slice_im_size(1:2),'method','nearest');
 atlas_im_size = size(atlas_im);
@@ -37,8 +46,10 @@ for iR = 1:length(lbl_lst)
     seg_stats(iR).name  = lbl_lst{iR};
     seg_stats(iR).idx   = lbl_idx(iR);
     seg_stats(iR).pixel = lbl_pixel(iR);
-    seg_stats(iR).area  = lbl_pixel(iR) * pixel_area_dw;
-    seg_stats(iR).area_units = [metadata.pixel_size_unit 'x' metadata.pixel_size_unit];
+    if is_spinfo
+        seg_stats(iR).area  = lbl_pixel(iR) * pixel_area_dw;
+        seg_stats(iR).area_units = [metadata.pixel_size_unit 'x' metadata.pixel_size_unit];
+    end
 end
 
 %% Read the segmentation and create a object binary file
@@ -78,19 +89,22 @@ for iL = 1:n_obj
     % of the centroid of the object
     if atlas_im(round(stats(iL).Centroid(2)),round(stats(iL).Centroid(1)))>0
         iR = iR + 1;
-        %label connected regions
+        %%% Label connected regions
         % Area properties
         obj_stats(iR).object_pixel    = stats(iL).Area; %#ok<*AGROW>
-        obj_stats(iR).object_area     = stats(iL).Area * pixel_area_dw;
-        obj_stats(iR).object_area_units = [metadata.pixel_size_unit 'x' metadata.pixel_size_unit];
+        if is_spinfo
+            obj_stats(iR).object_area     = stats(iL).Area * pixel_area_dw;
+            obj_stats(iR).object_area_units = [metadata.pixel_size_unit 'x' metadata.pixel_size_unit];
+        end
+        
         %Location properties
         obj_stats(iR).object_centroid_pixel = stats(iL).Centroid;
-        
+
         % TO DO COORDINATE in ABA space
         %obj_stats(iR).object_centroid_atlas =...
             %metadata.pixel_to_atlas_mat*[1-stats(iL).Centroid(1)/seg_im_size(1);1;1-stats(iL).Centroid(2)/seg_im_size(2)];
         %obj_stats(iR).object_centroid_atlas_units = 'ABA voxel';
-        
+
         %Shape properties
         obj_stats(iR).object_ori      = stats(iL).Orientation;
         obj_stats(iR).object_major_al_pixel = stats(iL).MajorAxisLength;
@@ -200,5 +214,3 @@ obj_stats = obj_stats';
 seg_stats = seg_stats';
 %
 return
-
-
