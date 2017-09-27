@@ -14,16 +14,9 @@ else
     error('Too many inputs');
 end
 
-% % Check if RemoveSheet123 is there and add it if possible. If not, then
-% % don't use the function in the code
-% if ~(exist('RemoveSheet123','file')==2)
-%     if exist('RemoveSheet123','dir')
-%         addpath(fullfile(pwd,'RemoveSheet123'));
-%     end
-% end
 % Check that the JSONlab is in the path and do something about it
 if ~(exist('loadjson','file')==2)
-    try 
+    try
         %install local
         if exist('jsonlab-1.5','dir')
             addpath(genpath(fullfile(pwd,'jsonlab-1.5')));
@@ -36,8 +29,8 @@ if ~(exist('loadjson','file')==2)
         end
         if ~(exist('loadjson','file')==2)
             error('quantify_dataset:add_jsonlab',['Program tried to add the ',...
-            'JSONlab package without success. Please follow instruction',...
-            'on the README document to install the package']);
+                'JSONlab package without success. Please follow instruction',...
+                'on the README document to install the package']);
         end
     catch
         error('quantify_dataset:add_jsonlab',['Program tried to add the ',...
@@ -45,75 +38,126 @@ if ~(exist('loadjson','file')==2)
             'on the README document to install the package']);
     end
 else
-    fprintf(1,'\nJSONlab toolbox is detected.');
+    fprintf(1,'\nJSONlab toolbox is detected.\n');
 end
-study_info = loadjson(study_info_json);
-% Add parsing inputs (one day)
-study_name     = study_info.study_name;
-atlas_dir      = study_info.atlas_dir;
-atlas_lbl_file = study_info.atlas_lbl_file;
-atlas_xml_file = study_info.atlas_xml_file;
-seg_dir        = study_info.seg_dir;
-obj_lbl        = study_info.obj_lbl;
-slice_dir      = study_info.slice_dir;
-output_dir     = study_info.output_dir;
-original_dir   = study_info.original_dir;
+
+%%% Parsing inputs
+% Open the study info JSON
+if exist(study_info_json,'file')
+    study_info = loadjson(study_info_json);
+else
+    error('quantify_dataset:StudyInfoNotFound',['Filename %s ',...
+        'was not found. Please verify the path to the study info JSON file'],...
+        study_info_json);
+end
+% Parsing required name/value pair from JSON
+study_name     = validate_input(study_info,'study_name');
+atlas_dir      = validate_input(study_info,'atlas_dir');
+atlas_lbl_file = validate_input(study_info,'atlas_lbl_file');
+seg_dir        = validate_input(study_info,'seg_dir');
+obj_lbl        = validate_input(study_info,'obj_lbl');
+slice_dir      = validate_input(study_info,'slice_dir');
+output_dir     = validate_input(study_info,'output_dir');
+% Parsing optional name/value pair from JSON
+original_dir   = validate_opt_input(study_info,'original_dir');
+allen_json     = validate_opt_input(study_info,'allen_json');
+pixel_dim      = validate_opt_input(study_info,'pixel_dim');
+%atlas_xml_file = validate_opt_input(study_info,'atlas_xml_file');
 %
 
-%% Get info on system
+% Take care of the real world mess
+is_spinfo = 0;
+if isempty(original_dir) && isempty(allen_json) && isempty(pixel_dim)
+    warning('quantify_dataset:NoSpatialInformation',...
+        ['No entries in the study info JSON file allows for calculation ',...
+        'of real world distances. Only pixel stats will be generated'])
+else
+    is_spinfo = 1;
+    if ~isempty(original_dir) && ~isempty(allen_json) ||...
+            ~isempty(original_dir) && ~isempty(pixel_dim) ||...
+            ~isempty(pixel_dim) && ~isempty(allen_json)
+        error('quantify_dataset:TooManyOptionalInputsForSpatialInformation',...
+            ['Several entries in the study info JSON file allows for calcualtion ',...
+            'of real world distances: original_dir, allen_json or pixel_dir .',...
+            'Please keep only one of the two entries'])
+    end
+    if ~isempty(original_dir)
+        ori_dir_ctn = dir([original_dir '*.tif']); % restricted to tif for a good reason
+    end
+    if ~isempty(allen_json) && exist(allen_json,'file')
+        allen = loadjson(allen_json);
+        allen_sec = [allen.msg{1}.section_images{:}];
+    end
+    if ~isempty(pixel_dim) && isnumeric(pixel_dim)
+        %you are happy
+        fprintf('\n Common resolution is used: pixel area %0.2fx%0.2f micrometers',...
+            pixel_dim,pixel_dim);
+    end
+end
+
+
+%%% Get info on system and start filling the output structure GlobalStats
 tic;
 sysinfo.username = getenv('username');
 % Computer type
 sysinfo.platformUsed  = computer;
-%OS used
+% OS used
 sysinfo.osType        = system_dependent('getos');
 % MATLAB
 sysinfo.matlabVersion = version;
-%%
+%
 GlobalStats.date_analysis = datestr(now);
 GlobalStats.system_info = sysinfo;
 GlobalStats.objects = [];
 GlobalStats.regions = [];
-%
-%%
-seg_dir_ctn = dir([seg_dir '*.png']);
+
+%%% Get the content of the segmentation directory
+seg_dir_ctn = dir([seg_dir '*.png']); %limited to png ??
 %
 n_slice = length(seg_dir_ctn);
-GlobalStats.n_slices = n_slice;
+GlobalStats.n_slices  = n_slice;
 GlobalStats.n_objects = NaN;
 GlobalStats.n_regions = NaN;
-fprintf(1,'\nTotal number of section detected: %d\n',n_slice);
-%%
+fprintf(1,'\nTotal number of section detected to analyse: %d\n',n_slice);
+
+%%% Get the content of te atlas directory
 atlas_dir_ctn = dir(atlas_dir);
 atlas_dir_ctn = atlas_dir_ctn(~[atlas_dir_ctn(:).isdir]);
-%%
-slice_dir_ctn = dir([slice_dir '*.png']);
-%
-output_xls_obj_ind = fullfile(output_dir,[study_name '_obj_ind.xlsx']);
-output_xls_reg_ind = fullfile(output_dir,[study_name '_reg_ind.xlsx']);
 
-%% Coordinates
-atlas_json_fn    = xmlcoord2jsonmat(atlas_xml_file);
-atlas_coord_json = loadjson(atlas_json_fn);
-sections_coord = [atlas_coord_json.slice{:}];
+%%% Get the content of the section directory
+slice_dir_ctn = dir([slice_dir '*.png']); % limited to png ??
 
-%% Original dir
-ori_dir_ctn = dir([original_dir '*.tif']);
+%%% Coordinates
+%atlas_json_fn    = xmlcoord2jsonmat(atlas_xml_file);
+%atlas_coord_json = loadjson(atlas_json_fn);
+%sections_coord   = [atlas_coord_json.slice{:}];
 
-%% Loop on all the images
+%%% Init for loop and loop on all the images
 n_objects = 0;
 n_regions = 0;
+output_xls_obj_ind = fullfile(output_dir,[study_name '_obj_ind.xlsx']);
+output_xls_reg_ind = fullfile(output_dir,[study_name '_reg_ind.xlsx']);
+%
 for iS = 1:n_slice
     %
     fprintf(1,' -- Analyzing slice #%d / %d\n',iS,n_slice);
-    %
+    %%% Get
     seg_name_orig = seg_dir_ctn(iS).name;
-    % Remove Object Prediction from the file name if its finds it
+    %%% Remove Object Prediction from the file name if found
     if strfind(seg_name_orig,'Object Prediction')
         seg_name = seg_name_orig(1:strfind(seg_name_orig,'Object Prediction')-2);
+    else
+        seg_name = seg_name_orig;
     end
-    % Get the index of the image: s followed by three digits 
-    seg_id = seg_name(end-4:end);
+    % Get the index of the image: s followed by three digits
+    idx_str_idx = regexp(seg_name_orig,'_s\d','once');
+    if isempty(idx_str_idx)
+        error('quantify_dataset:StandardNamingNotFound',...
+            ['The pattern ''_sXXX'' was not found in the segmentation image',...
+            ' filename %s. Please read README file for more info on standard naming.'],...
+            seg_name_orig);
+    end
+    seg_id = seg_name(idx_str_idx+2:end);
     %
     seg_name_file = fullfile(seg_dir,seg_name_orig);
     % Atlas
@@ -125,43 +169,85 @@ for iS = 1:n_slice
     slice_name = slice_dir_ctn(~cellfun('isempty',strfind({slice_dir_ctn(:).name},seg_id))).name;
     slice_name_file = fullfile(slice_dir,slice_name);
     % Original filename
-    ori_name = ori_dir_ctn(~cellfun('isempty',strfind({ori_dir_ctn(:).name},seg_id))).name;
-    ori_name_file = fullfile(original_dir,ori_name);
-    %
-    ori_name_file_txt = fullfile(original_dir,[ori_name(1:end-4) '.txt']);
-    if ~exist(ori_name_file_txt,'file')
-        % original tif
-        try
-            ori_metadata = imfinfo(ori_name_file);
-            metadata.width  = ori_metadata.Width;
-            metadata.height = ori_metadata.Height;
-            xresolution = unit_convert(ori_metadata.XResolution,ori_metadata.ResolutionUnit,'um');
-            yresolution = unit_convert(ori_metadata.YResolution,ori_metadata.ResolutionUnit,'um');
-            %         metadata.resolution_unit = 'pixel/um';
-            metadata.x_pixel_size = 1/xresolution;
-            metadata.y_pixel_size = 1/yresolution;
-            metadata.pixel_size_unit = 'um/pixel';
-        catch
-            error('quantify_dataset:fetching_metadata',...
-                'Unable to fetch the appropriate metadata from original tiff file');
-        end
+    %     ori_name = ori_dir_ctn(~cellfun('isempty',strfind({ori_dir_ctn(:).name},seg_id))).name;
+    %     ori_name_file = fullfile(original_dir,ori_name);
+    
+    % Fetch the resolution of the input section
+    % either in the metadata file or in the txt file or in the tif file
+    if ~is_spinfo
+        % No real world info
+        metadata.x_pixel_size = [];
+        metadata.y_pixel_size = [];
+        metadata.pixel_size_unit = '';
+        metadata.width  = [];
+        metadata.height = [];
     else
-        txt_section = load_txt(ori_name_file_txt);
-        if txt_section{2,3}~=txt_section{3,3}
-            error('non isotropic pixel resolution');
-        else
-            metadata.width  = str2double(txt_section{4,4});
-            metadata.height = str2double(txt_section{5,4});
-            metadata.x_pixel_size = txt_section{2,3};
-            metadata.y_pixel_size = txt_section{3,3};
+        % case 1
+        if ~isempty(original_dir)
+            ori_name = ori_dir_ctn(~cellfun('isempty',strfind({ori_dir_ctn(:).name},seg_id))).name;
+            ori_name_file = fullfile(original_dir,ori_name);
+            ori_name_txt  = fullfile(original_dir,[ori_name(1:end-4) '.txt']);
+            if ~exist(ori_name_txt,'file')
+                % original tif
+                try
+                    %
+                    ori_metadata = imfinfo(ori_name_file);
+                    %
+                    xresolution = unit_convert(ori_metadata.XResolution,ori_metadata.ResolutionUnit,'um');
+                    yresolution = unit_convert(ori_metadata.YResolution,ori_metadata.ResolutionUnit,'um');
+                    %         metadata.resolution_unit = 'pixel/um';
+                    metadata.x_pixel_size = 1/xresolution;
+                    metadata.y_pixel_size = 1/yresolution;
+                    metadata.pixel_size_unit = 'um';
+                    %
+                    metadata.width  = ori_metadata.Width;
+                    metadata.height = ori_metadata.Height;
+
+                catch
+                    error('quantify_dataset:fetching_metadata',...
+                        'Unable to fetch the appropriate metadata from original tiff files.');
+                end
+            else
+                txt_section = load_txt(ori_name_txt);
+                if txt_section{2,3}~=txt_section{3,3}
+                    error('non isotropic pixel resolution');
+                else
+
+                    metadata.x_pixel_size = txt_section{2,3};
+                    metadata.y_pixel_size = txt_section{3,3};
+                    metadata.pixel_size_unit = 'um';
+                    metadata.width  = str2double(txt_section{4,4});
+                    metadata.height = str2double(txt_section{5,4});
+                end
+            end
+        end
+        % case 2
+        if ~isempty(allen_json) && exist(allen_json,'file')
+            allen_sec_idx = find([allen_sec(:).section_number]==seg_id);
+            if isempty(allen_sec_idx)
+            else
+               metadata.x_pixel_size    = allen_sec(allen_sec_idx).resolution; 
+               metadata.y_pixel_size    = allen_sec(allen_sec_idx).resolution;
+               metadata.pixel_size_unit = 'um';
+               metadata.width  = allen_sec(allen_sec_idx).image_width;
+               metadata.height = allen_sec(allen_sec_idx).image_height;
+            end
+        end
+        % case 3
+        if ~isempty(pixel_dim) && isnumeric(pixel_dim)
+            metadata.x_pixel_size    = pixel_dim;
+            metadata.y_pixel_size    = pixel_dim;
             metadata.pixel_size_unit = 'um';
+            metadata.width  = [];
+            metadata.height = [];
         end
     end
-    % Coord
-    metadata.pixel_to_atlas_mat = sections_coord(~cellfun('isempty',...
-        strfind({sections_coord(:).filename},seg_name))).transf_mat;
-
     
+    % Coord
+%     metadata.pixel_to_atlas_mat = sections_coord(~cellfun('isempty',...
+%         strfind({sections_coord(:).filename},seg_name))).transf_mat;
+
+    %%% we have everything we need 
     [obj_stats,reg_stats] = quantify_single_section(atlas_name_file,seg_name_file,...
         slice_name_file,atlas_lbl_file,output_dir,obj_lbl,metadata);
     % Concatenate the individual objects with the ones from preivous
@@ -263,7 +349,7 @@ for row=1:size(rawData, 1)
     try
         result = regexp(rawData{row}, regexstr, 'names');
         numbers = result.numbers;
-
+        
         % Detected commas in non-thousand locations.
         invalidThousandsSeparator = false;
         if any(numbers==',')
@@ -289,12 +375,12 @@ struct_txt = raw;
 return
 
 function [outData] = unit_convert(inData,inUnits,outUnits)
-% 
+%
 conversionFactors = {
     'length',...
     {'m','cm','Centimeter','mm','um','nm','km','in','ft','yd','mile','AU'},...
     [1 1e-2 1e-2 1e-3 1e-6 1e-9 1e3 2.54e-2 12*2.54e-2 36*2.54e-2 1760*36*2.54e-2 1.49598e11]};
-    
+
 inUnits  = strtrim(inUnits);
 outUnits = strtrim(outUnits);
 %
@@ -307,3 +393,24 @@ factorStandardToOut = 1/conversionFactors{3}(strcmp(outUnits,conversionFactors{2
 factorInToOut = factorInToStandard*factorStandardToOut;
 %
 outData       = factorInToOut*inData;
+
+return
+
+function out_var = validate_input(study_info,field_nm)
+% Validate existence of the field in the JSON file
+if isfield(study_info,field_nm)
+    out_var     = study_info.(field_nm);
+else
+    error('quantify_dataset:MissingJSONentry',...
+        'Field %s missing in %s',field_nm,study_info_json);
+end
+
+function out_var = validate_opt_input(study_info,field_nm)
+% Validate existence of the field in the JSON file
+out_var = '';
+if isfield(study_info,field_nm)
+    out_var     = study_info.(field_nm);
+    % else
+    %  warning('quantify_dataset:OptionalJSONentry',...
+    %  'Optional field %s missing in %s',field_nm,study_info_json);
+end
