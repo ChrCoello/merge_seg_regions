@@ -111,8 +111,9 @@ GlobalStats.system_info = sysinfo;
 GlobalStats.objects = [];
 GlobalStats.regions = [];
 
-%%% Get the content of the segmentation directory
-seg_dir_ctn = dir([seg_dir '*.png']); %limited to png ??
+%%% Get the content of the segmentation directory and keep only images
+seg_dir_ctn_raw = dir(seg_dir);
+seg_dir_ctn = keep_images(seg_dir_ctn_raw);
 %
 n_slice = length(seg_dir_ctn);
 GlobalStats.n_slices  = n_slice;
@@ -125,7 +126,8 @@ atlas_dir_ctn = dir(atlas_dir);
 atlas_dir_ctn = atlas_dir_ctn(~[atlas_dir_ctn(:).isdir]);
 
 %%% Get the content of the section directory
-slice_dir_ctn = dir([slice_dir '*.png']); % limited to png ??
+slice_dir_ctn_raw = dir(slice_dir);
+slice_dir_ctn     = keep_images(slice_dir_ctn_raw);
 
 %%% Coordinates
 %atlas_json_fn    = xmlcoord2jsonmat(atlas_xml_file);
@@ -223,7 +225,7 @@ for iS = 1:n_slice
         end
         % case 2
         if ~isempty(allen_json) && exist(allen_json,'file')
-            allen_sec_idx = find([allen_sec(:).section_number]==seg_id);
+            allen_sec_idx = find([allen_sec(:).section_number]==str2double(seg_id));
             if isempty(allen_sec_idx)
             else
                metadata.x_pixel_size    = allen_sec(allen_sec_idx).resolution; 
@@ -414,3 +416,16 @@ if isfield(study_info,field_nm)
     %  warning('quantify_dataset:OptionalJSONentry',...
     %  'Optional field %s missing in %s',field_nm,study_info_json);
 end
+
+function ctn_out = keep_images(ctn_in)
+%%% Get current image format list supported by the 
+formatsAvail = {'jpg','png','tif'};
+
+listFiles = {ctn_in(:).name}';
+% Beautiful way to get indexes of all the patterns in a cell string
+fun = @(s)~cellfun('isempty',strfind(listFiles,s));
+out = cellfun(fun,formatsAvail,'UniformOutput',false);
+idxToKeep = any(horzcat(out{:}),2);
+% Keep only the images and create a list
+ctn_out = ctn_in(idxToKeep);
+return

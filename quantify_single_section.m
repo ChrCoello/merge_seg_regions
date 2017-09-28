@@ -25,10 +25,10 @@ if ~(isempty(metadata.x_pixel_size) && isempty(metadata.y_pixel_size))
     is_spinfo = 1;
     if ~(isempty(metadata.width) && isempty(metadata.height))
         % area
-       area_up = metadata.width_ori * metadata.height_ori;
+       area_up = metadata.width * metadata.height;
        area_dw = slice_im_size(1) * slice_im_size(2); 
        % pixel
-       pixel_area_up = metadata.x_pixel_size_ori*metadata.y_pixel_size_ori;
+       pixel_area_up = metadata.x_pixel_size*metadata.y_pixel_size;
        % all good
        pixel_area_dw = pixel_area_up*area_up/area_dw; 
     else
