@@ -83,6 +83,7 @@ statsB = regionprops(logical(obj_im_cl),slice_im(:,:,3),'MeanIntensity');
 % A = [stats.Area];
 n_obj = length(stats)-1;
 iR = 0;
+%
 for iL = 1:n_obj
     %% Count the cells
     % only include it if there is an atlas label associated to the location
@@ -97,13 +98,24 @@ for iL = 1:n_obj
             obj_stats(iR).object_area_units = [metadata.pixel_size_unit 'x' metadata.pixel_size_unit];
         end
         
-        %Location properties
+        %Location properties (x,y)
         obj_stats(iR).object_centroid_pixel = stats(iL).Centroid;
 
-        % TO DO COORDINATE in ABA space
-        %obj_stats(iR).object_centroid_atlas =...
-            %metadata.pixel_to_atlas_mat*[1-stats(iL).Centroid(1)/seg_im_size(1);1;1-stats(iL).Centroid(2)/seg_im_size(2)];
-        %obj_stats(iR).object_centroid_atlas_units = 'ABA voxel';
+        %Location in ABA space: careful with centroid coordinates (x,y) and
+        %image size (height width) and atlas standards (RAI)
+        objcentpix_height_width_norm =...
+            [obj_stats(iR).object_centroid_pixel(2),...
+            obj_stats(iR).object_centroid_pixel(1)]./seg_im_size;
+        obj_stats(iR).object_centroid_atlas = metadata.o_vec +...
+            metadata.u_vec * (1-objcentpix_height_width_norm(2)) +...
+            metadata.v_vec * objcentpix_height_width_norm(1);
+        obj_stats(iR).object_centroid_atlas_units = 'ABA voxel 25um';
+        % Verification that the corrdinates calculated are within the ABA
+        % space size
+        if ~all(obj_stats(iR).object_centroid_atlas < metadata.atlas_size)
+            % Bad news, just put NaNs
+            obj_stats(iR).object_centroid_atlas = [NaN NaN NaN];
+        end
 
         %Shape properties
         obj_stats(iR).object_ori      = stats(iL).Orientation;

@@ -1,7 +1,7 @@
 function [output_json,study_info_json] = quantify_dataset(varargin)
 %
 %
-% TO DO
+% Specific to Allen Mouse 25um !!!
 % Input : study_info_json
 %
 % Parse inputs
@@ -62,7 +62,7 @@ output_dir     = validate_input(study_info,'output_dir');
 original_dir   = validate_opt_input(study_info,'original_dir');
 allen_json     = validate_opt_input(study_info,'allen_json');
 pixel_dim      = validate_opt_input(study_info,'pixel_dim');
-%atlas_xml_file = validate_opt_input(study_info,'atlas_xml_file');
+atlas_xml_file = validate_opt_input(study_info,'atlas_xml_file');
 %
 
 % Take care of the real world mess
@@ -110,6 +110,8 @@ GlobalStats.date_analysis = datestr(now);
 GlobalStats.system_info = sysinfo;
 GlobalStats.objects = [];
 GlobalStats.regions = [];
+% To be modified if rat or mouse 10um
+GlobalStats.atlas_size = [456 528 320];
 
 %%% Get the content of the segmentation directory and keep only images
 seg_dir_ctn_raw = dir(seg_dir);
@@ -130,9 +132,13 @@ slice_dir_ctn_raw = dir(slice_dir);
 slice_dir_ctn     = keep_images(slice_dir_ctn_raw);
 
 %%% Coordinates
-%atlas_json_fn    = xmlcoord2jsonmat(atlas_xml_file);
-%atlas_coord_json = loadjson(atlas_json_fn);
-%sections_coord   = [atlas_coord_json.slice{:}];
+if ~isempty(atlas_xml_file) && exist(atlas_xml_file,'file')
+    atlas_json_fn    = xmlcoord2jsonmat(atlas_xml_file);
+    atlas_coord_json = loadjson(atlas_json_fn);
+    sections_coord   = [atlas_coord_json.slice{:}];
+else
+    sections_coord   = [];
+end
 
 %%% Init for loop and loop on all the images
 n_objects = 0;
@@ -170,9 +176,6 @@ for iS = 1:n_slice
     % Section
     slice_name = slice_dir_ctn(~cellfun('isempty',strfind({slice_dir_ctn(:).name},seg_id))).name;
     slice_name_file = fullfile(slice_dir,slice_name);
-    % Original filename
-    %     ori_name = ori_dir_ctn(~cellfun('isempty',strfind({ori_dir_ctn(:).name},seg_id))).name;
-    %     ori_name_file = fullfile(original_dir,ori_name);
     
     % Fetch the resolution of the input section
     % either in the metadata file or in the txt file or in the tif file
@@ -246,8 +249,21 @@ for iS = 1:n_slice
     end
     
     % Coord
-%     metadata.pixel_to_atlas_mat = sections_coord(~cellfun('isempty',...
-%         strfind({sections_coord(:).filename},seg_name))).transf_mat;
+    if ~isempty(sections_coord)
+        idx_seg_mat = ~cellfun('isempty',...
+            strfind({sections_coord(:).filename},seg_name));
+        metadata.pixel_to_atlas_mat = sections_coord(idx_seg_mat).transf_mat;
+        metadata.o_vec = [sections_coord(idx_seg_mat).ox,...
+            sections_coord(idx_seg_mat).oy,...
+            sections_coord(idx_seg_mat).oz];
+        metadata.u_vec = [sections_coord(idx_seg_mat).ux,...
+            sections_coord(idx_seg_mat).uy,...
+            sections_coord(idx_seg_mat).uz];
+        metadata.v_vec = [sections_coord(idx_seg_mat).vx,...
+            sections_coord(idx_seg_mat).vy,...
+            sections_coord(idx_seg_mat).vz];
+        metadata.atlas_size = GlobalStats.atlas_size;
+    end
 
     %%% we have everything we need 
     [obj_stats,reg_stats] = quantify_single_section(atlas_name_file,seg_name_file,...
@@ -282,6 +298,11 @@ savejson('',GlobalStats,output_json);
 %as excel
 objects = struct2table(GlobalStats.objects);
 regions = struct2table(GlobalStats.regions);
+%as txt for meshview
+obj_coord_atlas = vertcat(GlobalStats.objects(:).object_centroid_atlas);
+fid1 = fopen(fullfile(output_dir,[study_name '_objects_meshview.txt']),'w+');
+fprintf(fid1,'%d,%d,%d\n',round(obj_coord_atlas'));
+fclose(fid1);
 %
 output_xls_obj = fullfile(output_dir,[study_name '_obj.xlsx']);
 output_xls_reg = fullfile(output_dir,[study_name '_reg.xlsx']);
