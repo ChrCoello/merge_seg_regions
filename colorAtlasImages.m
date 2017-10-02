@@ -6,8 +6,8 @@ function [pr,lbl_lst,lbl_idx,lbl_pixel] = colorAtlasImages(segIm,lblFile)
 if exist(lblFile,'file')
     annotation = importITKLabelfile(lblFile);
 else
-    error('colorAtlasImages:LabelFileNotFound',['Unable to find the label file named %s.',...
-        'Please be dure that the path is correct'],lblFile)
+    error('colorAtlasImages:LabelFileNotFound',['Unable to find the label file named %s. \n',...
+        'Please make sure that the path is correct.'],lblFile)
 end
 lbl_clr = table2array(annotation(:,1:4));
 lbl_nm  = table2cell(annotation(:,5));
