@@ -1,7 +1,7 @@
 function [output_json,study_info_json] = quantify_dataset(varargin)
 %
 %
-% Sepcific to Allen Mouse 25um !!!
+% Specific to Allen Mouse 25um !!!
 % Input : study_info_json
 %
 % Parse inputs
@@ -298,6 +298,11 @@ savejson('',GlobalStats,output_json);
 %as excel
 objects = struct2table(GlobalStats.objects);
 regions = struct2table(GlobalStats.regions);
+%as txt for meshview
+obj_coord_atlas = vertcat(GlobalStats.objects(:).object_centroid_atlas);
+fid1 = fopen(fullfile(output_dir,[study_name '_objects_meshview.txt']),'w+');
+fprintf(fid1,'%d,%d,%d\n',round(obj_coord_atlas'));
+fclose(fid1);
 %
 output_xls_obj = fullfile(output_dir,[study_name '_obj.xlsx']);
 output_xls_reg = fullfile(output_dir,[study_name '_reg.xlsx']);
