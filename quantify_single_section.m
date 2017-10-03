@@ -25,14 +25,14 @@ if ~(isempty(metadata.x_pixel_size) && isempty(metadata.y_pixel_size))
     is_spinfo = 1;
     if ~(isempty(metadata.width) && isempty(metadata.height))
         % area
-       area_up = metadata.width * metadata.height;
-       area_dw = slice_im_size(1) * slice_im_size(2); 
-       % pixel
-       pixel_area_up = metadata.x_pixel_size*metadata.y_pixel_size;
-       % all good
-       pixel_area_dw = pixel_area_up*area_up/area_dw; 
+        area_up = metadata.width * metadata.height;
+        area_dw = slice_im_size(1) * slice_im_size(2);
+        % pixel
+        pixel_area_up = metadata.x_pixel_size*metadata.y_pixel_size;
+        % all good
+        pixel_area_dw = pixel_area_up*area_up/area_dw;
     else
-       pixel_area_dw = metadata.x_pixel_size * metadata.y_pixel_size;
+        pixel_area_dw = metadata.x_pixel_size * metadata.y_pixel_size;
     end
 end
 
@@ -76,7 +76,7 @@ assert(all(atlas_im_size(1:2)==seg_im_size(1:2)),...
 %% Returns measurements for the set of properties specified by
 % properties for each connected component (object) in the binary image
 stats  = regionprops(logical(obj_im_cl),'Centroid','Area','BoundingBox',...
-              'Orientation', 'MajorAxisLength','MinorAxisLength');
+    'Orientation', 'MajorAxisLength','MinorAxisLength');
 statsR = regionprops(logical(obj_im_cl),slice_im(:,:,1),'MeanIntensity');
 statsG = regionprops(logical(obj_im_cl),slice_im(:,:,2),'MeanIntensity');
 statsB = regionprops(logical(obj_im_cl),slice_im(:,:,3),'MeanIntensity');
@@ -100,23 +100,32 @@ for iL = 1:n_obj
         
         %Location properties (x,y)
         obj_stats(iR).object_centroid_pixel = stats(iL).Centroid;
-
+        
         %Location in ABA space: careful with centroid coordinates (x,y) and
-        %image size (height width) and atlas standards (RAI)
+        %image size (height(vertical) width(horizontal)) and atlas standards
         objcentpix_height_width_norm =...
             [obj_stats(iR).object_centroid_pixel(2),...
             obj_stats(iR).object_centroid_pixel(1)]./seg_im_size;
-        obj_stats(iR).object_centroid_atlas = metadata.o_vec +...
-            metadata.u_vec * (1-objcentpix_height_width_norm(2)) +...
-            metadata.v_vec * objcentpix_height_width_norm(1);
+        switch metadata.slice_ori
+            case 'coronal'
+                obj_stats(iR).object_centroid_atlas = metadata.o_vec +...
+                    metadata.u_vec * (1-objcentpix_height_width_norm(2)) +...
+                    metadata.v_vec * objcentpix_height_width_norm(1);
+            case 'sagittal'
+                obj_stats(iR).object_centroid_atlas = metadata.o_vec +...
+                    metadata.u_vec * objcentpix_height_width_norm(2) +...
+                    metadata.v_vec * objcentpix_height_width_norm(1);
+            otherwise
+                obj_stats(iR).object_centroid_atlas = [NaN NaN NaN];
+        end
         obj_stats(iR).object_centroid_atlas_units = 'ABA voxel 25um';
-        % Verification that the corrdinates calculated are within the ABA
+        % Verification that the coordinates calculated are within the ABA
         % space size
         if ~all(obj_stats(iR).object_centroid_atlas < metadata.atlas_size)
             % Bad news, just put NaNs
             obj_stats(iR).object_centroid_atlas = [NaN NaN NaN];
         end
-
+        
         %Shape properties
         obj_stats(iR).object_ori      = stats(iL).Orientation;
         obj_stats(iR).object_major_al_pixel = stats(iL).MajorAxisLength;
@@ -150,17 +159,17 @@ for iC=1:length(centroids)
     %
     xbar = centroids(iC,1);
     ybar = centroids(iC,2);
-
+    
     a = obj_stats(iC).object_major_al_pixel/2;
     b = obj_stats(iC).object_minor_al_pixel/2;
-
+    
     theta = pi*obj_stats(iC).object_ori/180;
     R = [ cos(theta)   sin(theta)
-         -sin(theta)   cos(theta)];
-
+        -sin(theta)   cos(theta)];
+    
     xy = [a*cosphi; b*sinphi];
     xy = R*xy;
-
+    
     x = xy(1,:) + xbar;
     y = xy(2,:) + ybar;
     %

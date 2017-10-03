@@ -50,21 +50,21 @@ else
         'was not found. Please verify the path to the study info JSON file'],...
         study_info_json);
 end
-% Parsing required name/value pair from JSON
+%%% Parsing required name/value pair from JSON
 study_name     = validate_input(study_info,'study_name');
+slice_dir      = validate_input(study_info,'slice_dir');
+slice_ori      = validate_input(study_info,'slice_ori');
 atlas_dir      = validate_input(study_info,'atlas_dir');
 atlas_lbl_file = validate_input(study_info,'atlas_lbl_file');
 seg_dir        = validate_input(study_info,'seg_dir');
 obj_lbl        = validate_input(study_info,'obj_lbl');
-slice_dir      = validate_input(study_info,'slice_dir');
 output_dir     = validate_input(study_info,'output_dir');
-% Parsing optional name/value pair from JSON
+%%% Parsing optional name/value pair from JSON
 original_dir   = validate_opt_input(study_info,'original_dir');
 allen_json     = validate_opt_input(study_info,'allen_json');
 pixel_dim      = validate_opt_input(study_info,'pixel_dim');
 atlas_xml_file = validate_opt_input(study_info,'atlas_xml_file');
 %
-
 % Take care of the real world mess
 is_spinfo = 0;
 if isempty(original_dir) && isempty(allen_json) && isempty(pixel_dim)
@@ -157,7 +157,7 @@ for iS = 1:n_slice
     else
         seg_name = seg_name_orig;
     end
-    % Get the index of the image: s followed by three digits
+    %%% Get the index of the image: s followed by three digits
     idx_str_idx = regexp(seg_name_orig,'_s\d','once');
     if isempty(idx_str_idx)
         error('quantify_dataset:StandardNamingNotFound',...
@@ -168,17 +168,18 @@ for iS = 1:n_slice
     seg_id = seg_name(idx_str_idx+2:end);
     %
     seg_name_file = fullfile(seg_dir,seg_name_orig);
-    % Atlas
+    %%% Atlas
     atlas_slices = atlas_dir_ctn(~cellfun('isempty',strfind({atlas_dir_ctn(:).name},seg_id)));
     %
     atlas_name = atlas_slices(~cellfun('isempty',strfind({atlas_slices(:).name},'.bin'))).name;
     atlas_name_file = fullfile(atlas_dir,atlas_name);
-    % Section
+    %%% Section
     slice_name = slice_dir_ctn(~cellfun('isempty',strfind({slice_dir_ctn(:).name},seg_id))).name;
     slice_name_file = fullfile(slice_dir,slice_name);
     
     % Fetch the resolution of the input section
     % either in the metadata file or in the txt file or in the tif file
+    metadata.slice_ori = slice_ori;
     if ~is_spinfo
         % No real world info
         metadata.x_pixel_size = [];
@@ -248,7 +249,7 @@ for iS = 1:n_slice
         end
     end
     
-    % Coord
+    %%% Transformation vectors and matrix
     if ~isempty(sections_coord)
         idx_seg_mat = ~cellfun('isempty',...
             strfind({sections_coord(:).filename},seg_id));
@@ -265,10 +266,11 @@ for iS = 1:n_slice
         metadata.atlas_size = GlobalStats.atlas_size;
     end
 
-    %%% we have everything we need 
+    %%% we have everything we need: calling quantify_single_section
     [obj_stats,reg_stats] = quantify_single_section(atlas_name_file,seg_name_file,...
         slice_name_file,atlas_lbl_file,output_dir,obj_lbl,metadata);
-    % Concatenate the individual objects with the ones from preivous
+    
+    %%% Concatenate the individual objects with the ones from preivous
     % sections
     n_objects =+ length(obj_stats);
     n_regions =+ length(reg_stats);
@@ -284,12 +286,15 @@ for iS = 1:n_slice
     writetable(regions,output_xls_reg_ind,'Sheet',seg_id);
     %
     fprintf(' -- Analyzing slice #%d / %d -- done\n',iS,n_slice);
+    %Clear metadata not to mix information between sections
+    clear metadata
 end
 % if exist('RemoveSheet123','file')==2
 %     RemoveSheet123(output_xls_obj_ind);
 %     RemoveSheet123(output_xls_obj_ind);
 % end
-%% Write output
+
+%%% Write output
 GlobalStats.n_objects = n_objects;
 GlobalStats.n_regions = n_regions;
 %as json
@@ -300,7 +305,7 @@ objects = struct2table(GlobalStats.objects);
 regions = struct2table(GlobalStats.regions);
 %as txt for meshview
 obj_coord_atlas = vertcat(GlobalStats.objects(:).object_centroid_atlas);
-fid1 = fopen(fullfile(output_dir,[study_name '_objects_meshview.txt']),'w+');
+fid1 = fopen(fullfile(output_dir,[study_name '_obj_meshview.txt']),'w+');
 fprintf(fid1,'%d,%d,%d\n',round(obj_coord_atlas'));
 fclose(fid1);
 %
