@@ -25,10 +25,8 @@ for iR = 1 : sZB(1)
     for iC = 1 : sZB(2)
         if segIm(iR,iC)>0
             try
-                idx_ann         = (segIm(iR,iC)==lbl_clr_raw(:,1));
-                if debug
-                    pr(iR,iC,:) = lbl_clr_raw(idx_ann,2:4);
-                end
+                idx_ann     = (segIm(iR,iC)==lbl_clr_raw(:,1));
+                pr(iR,iC,:) = lbl_clr_raw(idx_ann,2:4);
                 if ~any(segIm(iR,iC)==lbl_idx)
                     lbl_idx(end+1)  = segIm(iR,iC);
                     lbl_lst = vertcat(lbl_lst,lbl_nm(idx_ann));
@@ -53,8 +51,6 @@ for iRR = 1:length(lbl_idx)
 end
 if debug
     hF = figure;imshow(uint8(pr),'Border','tight');
-    F = getframe(hF);
-    imwrite(F.cdata,'colorOnlyCereb.png');
 end
 
 return
