@@ -430,7 +430,7 @@ if isfield(study_info,field_nm)
     out_var     = study_info.(field_nm);
 else
     error('quantify_dataset:MissingJSONentry',...
-        'Field %s missing in %s',field_nm,study_info_json);
+        'Field %s missing in the json file',field_nm);
 end
 
 function out_var = validate_opt_input(study_info,field_nm)
