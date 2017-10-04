@@ -156,12 +156,11 @@ for iR = 1 : n_reg
     end
     %
 end
-% save data
+% save data json
 stats_json_filename = fullfile(json_path,sprintf('%s_stats.json',json_filename));
 savejson('',stats,stats_json_filename);
-%
+% save data excel
 stats_xls_filename = fullfile(json_path,sprintf('%s_stats.xlsx',json_filename));
 writetable(struct2table(stats),stats_xls_filename);
-
 return
 
