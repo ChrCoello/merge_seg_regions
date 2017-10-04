@@ -40,11 +40,12 @@ end
 atlas_im = ReadSlice(atlas);
 atlas_im = imresize(atlas_im,slice_im_size(1:2),'method','nearest');
 atlas_im_size = size(atlas_im);
-[atlas_im_rgb,lbl_lst,lbl_idx,lbl_pixel] = colorAtlasImages(atlas_im,atlas_lbl);
+[atlas_im_rgb,lbl_lst,lbl_idx,lbl_pixel,lbl_clr] = colorAtlasImages(atlas_im,atlas_lbl);
 % make it a structure
 for iR = 1:length(lbl_lst)
     seg_stats(iR).name  = lbl_lst{iR};
     seg_stats(iR).idx   = lbl_idx(iR);
+    seg_stats(iR).clr   = lbl_clr(iR,:);
     seg_stats(iR).pixel = lbl_pixel(iR);
     if is_spinfo
         seg_stats(iR).area  = lbl_pixel(iR) * pixel_area_dw;
