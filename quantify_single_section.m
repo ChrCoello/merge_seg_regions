@@ -1,4 +1,4 @@
-function [obj_stats,seg_stats] = quantify_single_section(atlas,seg,slice,...
+function [obj_stats,seg_stats,features] = quantify_single_section(atlas,seg,slice,...
     atlas_lbl,output_dir,obj_lbl,metadata)
 %QUANTIFY_SINGLE_SECTION quantify objects in a section
 % Takes resolution from the original text file
@@ -142,6 +142,16 @@ for iL = 1:n_obj
         % Slice information
         obj_stats(iR).slice_name      = sl_name;
         obj_stats(iR).slice_size      = seg_im_size;
+        %
+        %%%%%%%%%%%%
+        %create the spatial coord json file
+        features(iR).type = 'Feature';
+        features(iR).geometry.type = 'Point';
+        features(iR).geometry.coordinates = obj_stats(iR).object_centroid_atlas;
+        features(iR).geometry.space = 'WHS_SD_rat_v1.01';
+        features(iR).properties.id = obj_stats(iR).slice_name;
+        features(iR).properties.region_name_str = obj_stats(iR).region_name;
+        %    
     end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -234,5 +244,6 @@ close(hF4);
 % Prepare the output
 obj_stats = obj_stats';
 seg_stats = seg_stats';
+features  = features';
 %
 return

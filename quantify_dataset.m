@@ -1,4 +1,4 @@
-function [output_json,study_info_json] = quantify_dataset(varargin)
+function [output_json,study_info_json,sp_json] = quantify_dataset(varargin)
 %
 %
 % Specific to Allen Mouse 25um !!!
@@ -110,6 +110,8 @@ GlobalStats.date_analysis = datestr(now);
 GlobalStats.system_info = sysinfo;
 GlobalStats.objects = [];
 GlobalStats.regions = [];
+SPcoord.type = 'FeatureCollection';
+SPcoord.features = [];
 % To be modified if rat or mouse 10um
 GlobalStats.atlas_size = [456 528 320];
 
@@ -121,6 +123,7 @@ n_slice = length(seg_dir_ctn);
 GlobalStats.n_slices  = n_slice;
 GlobalStats.n_objects = NaN;
 GlobalStats.n_regions = NaN;
+%
 fprintf(1,'\nTotal number of section detected to analyse: %d\n',n_slice);
 
 %%% Get the content of te atlas directory
@@ -267,8 +270,13 @@ for iS = 1:n_slice
     end
 
     %%% we have everything we need: calling quantify_single_section
-    [obj_stats,reg_stats] = quantify_single_section(atlas_name_file,seg_name_file,...
-        slice_name_file,atlas_lbl_file,output_dir,obj_lbl,metadata);
+    [obj_stats,reg_stats,sp_stats] = quantify_single_section(atlas_name_file,...
+        seg_name_file,...
+        slice_name_file,...
+        atlas_lbl_file,...
+        output_dir,...
+        obj_lbl,...
+        metadata);
     
     %%% Concatenate the individual objects with the ones from preivous
     % sections
@@ -277,6 +285,7 @@ for iS = 1:n_slice
     %
     GlobalStats.objects = vertcat(GlobalStats.objects,obj_stats);
     GlobalStats.regions = vertcat(GlobalStats.regions,reg_stats);
+    SPcoord.features = vertcat(SPcoord.features,sp_stats);
     %as excel
     objects = struct2table(obj_stats);
     regions = struct2table(reg_stats);
@@ -300,6 +309,8 @@ GlobalStats.n_regions = n_regions;
 %as json
 output_json = fullfile(output_dir,[study_name '_obj_reg_data.json']);
 savejson('',GlobalStats,output_json);
+sp_json = fullfile(output_dir,[study_name '_sp_data.json']);
+savejson('',SPcoord,sp_json);
 %as excel
 objects = struct2table(GlobalStats.objects);
 regions = struct2table(GlobalStats.regions);
