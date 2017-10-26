@@ -19,7 +19,10 @@ else
     error('Too many inputs');
 end
 
-[json_path,json_filename,~] = fileparts(json_file);
+% Check JSON
+checkJson();
+
+% Load object list
 json_data = loadjson(json_file);
 % all base region
 obj_cell = json_data.objects{1};
@@ -44,6 +47,7 @@ reg_clr_lst = vertcat(reg_struct(:).rgb);
 reg_clr_lst_unq = reg_clr_lst(idx_reg_name_lst_unq,:);
 %
 % Check units
+fprintf(1,'Checking units\n');
 if length(unique(reg_area_units_lst))==1
     reg_area_unit = unique(reg_area_units_lst);
     reg_area_unit = reg_area_unit{:};
@@ -59,6 +63,7 @@ reg_empty = struct('name','',...
     'area_unit',reg_area_unit);
 reg_info = repmat(reg_empty,n_unq_reg,1);
 % Loop on regions
+fprintf(1,'Looping on the regions\n');
 for iR = 1 : n_unq_reg
     reg_info(iR).name = reg_name_lst_unq{iR};
     reg_info(iR).idx  = reg_idx_lst_unq(iR);
@@ -103,6 +108,8 @@ obj_empty = struct('name','',...
     'area_unit',obj_area_unit);
 obj_info = repmat(obj_empty,n_unq_obj,1);
 %
+fprintf(1,'Looping on the objects\n');
+unq_obj = 0;
 for iR = 1 : n_unq_obj
     %
     obj_info(iR).name  = obj_name_lst_unq{iR};
@@ -111,6 +118,7 @@ for iR = 1 : n_unq_obj
     obj_info(iR).pxl   = sum(obj_pixel_lst(obj_idx_lst==obj_idx_lst_unq(iR)));
     obj_info(iR).area  = sum(obj_area_lst(obj_idx_lst==obj_idx_lst_unq(iR)));
     obj_info(iR).coord = obj_coord_lst(obj_idx_lst==obj_idx_lst_unq(iR),:);
+    unq_obj = unq_obj + length(obj_info(iR).coord);
     %
 %     obj_info(iR).mean_red   = mean(obj_mean_r(obj_idx_lst==obj_idx_lst_unq(iR)));
 %     obj_info(iR).mean_green = mean(obj_mean_g(obj_idx_lst==obj_idx_lst_unq(iR)));
@@ -131,36 +139,74 @@ stats_empty = struct('reg_name','',...
     'obj_area_unit',obj_area_unit,...
     'obj_reg_area_ratio',0);
 %
-stats = repmat(stats_empty,n_reg,1);
+region_struct.input_fn = json_file;
+region_struct.date_analysis = datestr(now);
+region_struct.stats = repmat(stats_empty,n_reg,1);
+region_struct.study_info = json_data.study_info;
 %
+fprintf(1,'Combining %d objects in %d regions\n',unq_obj,n_reg);
 for iR = 1 : n_reg
     idx_obj_in_reg = find([obj_info(:).idx]==reg_info(iR).idx);
-    stats(iR).reg_name = reg_name_lst_unq{iR};
-    stats(iR).reg_idx  = reg_info(iR).idx;
-    stats(iR).reg_pxl  = reg_info(iR).pxl;
-    stats(iR).reg_area = reg_info(iR).area;
-    stats(iR).reg_rgb  = reg_info(iR).rgb; 
-    stats(iR).reg_area_unit = reg_info(iR).area_unit;
+    region_struct.stats(iR).reg_name = reg_name_lst_unq{iR};
+    region_struct.stats(iR).reg_idx  = reg_info(iR).idx;
+    region_struct.stats(iR).reg_pxl  = reg_info(iR).pxl;
+    region_struct.stats(iR).reg_area = reg_info(iR).area;
+    region_struct.stats(iR).reg_rgb  = reg_info(iR).rgb; 
+    region_struct.stats(iR).reg_area_unit = reg_info(iR).area_unit;
     if ~(idx_obj_in_reg==0)
         %
-        stats(iR).obj_cnt = obj_info(idx_obj_in_reg).cnt;
-        stats(iR).obj_reg_cnt_ratio = stats(iR).obj_cnt./stats(iR).reg_area;
+        region_struct.stats(iR).obj_cnt = obj_info(idx_obj_in_reg).cnt;
+        region_struct.stats(iR).obj_reg_cnt_ratio = region_struct.stats(iR).obj_cnt./region_struct.stats(iR).reg_area;
         %
-        stats(iR).obj_pxl = obj_info(idx_obj_in_reg).pxl;
+        region_struct.stats(iR).obj_pxl = obj_info(idx_obj_in_reg).pxl;
         %
-        stats(iR).obj_coord = obj_info(idx_obj_in_reg).coord;
+        region_struct.stats(iR).obj_coord = obj_info(idx_obj_in_reg).coord;
         %
-        stats(iR).obj_area = obj_info(idx_obj_in_reg).area;
-        stats(iR).obj_area_unit = obj_info(idx_obj_in_reg).area_unit;
-        stats(iR).obj_reg_area_ratio = stats(iR).obj_area./stats(iR).reg_area;
+        region_struct.stats(iR).obj_area = obj_info(idx_obj_in_reg).area;
+        region_struct.stats(iR).obj_area_unit = obj_info(idx_obj_in_reg).area_unit;
+        region_struct.stats(iR).obj_reg_area_ratio = region_struct.stats(iR).obj_area./region_struct.stats(iR).reg_area;
     end
     %
 end
 % save data json
-stats_json_filename = fullfile(json_path,sprintf('%s_stats.json',json_filename));
-savejson('',stats,stats_json_filename);
+stats_json_filename = fullfile(json_data.study_info.output_dir,...
+    sprintf('%s_objects_per_region.json',json_data.study_info.study_name));
+savejson('',region_struct,stats_json_filename);
 % save data excel
-stats_xls_filename = fullfile(json_path,sprintf('%s_stats.xlsx',json_filename));
-writetable(struct2table(stats),stats_xls_filename);
+output_dir_xls = fullfile(json_data.study_info.output_dir,'excel');
+if ~exist(output_dir_xls,'dir')
+    mkdir(output_dir_xls);
+end
+stats_xls_filename = fullfile(output_dir_xls,...
+    sprintf('%s_objects_per_region.xlsx',json_data.study_info.study_name));
+writetable(struct2table(region_struct.stats),stats_xls_filename);
+return
+
+function checkJson()
+if ~(exist('loadjson','file')==2)
+    try
+        %install local
+        if exist('jsonlab-1.5','dir')
+            addpath(genpath(fullfile(pwd,'jsonlab-1.5')));
+        else  %install on the nesys server
+            if exist('Z:\NESYS_Tools\Matlab\jsonlab-1.5','dir')
+                addpath(genpath('Z:\NESYS_Tools\Matlab\jsonlab-1.5'));
+            elseif exist('Y:\NESYS_Tools\Matlab\jsonlab-1.5','dir')
+                addpath(genpath('Y:\NESYS_Tools\Matlab\jsonlab-1.5'));
+            end
+        end
+        if ~(exist('loadjson','file')==2)
+            error('quantify_dataset:add_jsonlab',['Program tried to add the ',...
+                'JSONlab package without success. Please follow instruction',...
+                'on the README document to install the package']);
+        end
+    catch
+        error('quantify_dataset:add_jsonlab',['Program tried to add the ',...
+            'JSONlab package without success. Please follow instruction',...
+            'on the README document to install the package']);
+    end
+else
+    fprintf(1,'\nJSONlab toolbox is detected.\n');
+end
 return
 

@@ -123,9 +123,7 @@ for iL = 1:n_obj
         obj_stats(iR).object_major_al_pixel = stats(iL).MajorAxisLength;
         obj_stats(iR).object_minor_al_pixel = stats(iL).MinorAxisLength;
         % Intensity properties
-        obj_stats(iR).object_meanR    = statsR(iL).MeanIntensity;
-        obj_stats(iR).object_meanG    = statsG(iL).MeanIntensity;
-        obj_stats(iR).object_meanB    = statsB(iL).MeanIntensity;
+        obj_stats(iR).object_RGB_mean = [statsR(iL).MeanIntensity statsG(iL).MeanIntensity statsB(iL).MeanIntensity];
         % Region belonging properties
         obj_stats(iR).region_idx      = atlas_im(round(stats(iL).Centroid(2)),round(stats(iL).Centroid(1)));
         obj_stats(iR).region_name     = lbl_lst{lbl_idx==obj_stats(iR).region_idx};
@@ -145,8 +143,13 @@ for iL = 1:n_obj
         %    
     end
 end
+% Write images in a specific folder
+output_dir_img = fullfile(output_dir,'qc_fig');
+if ~exist(output_dir_img,'dir')
+    mkdir(output_dir_img);
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%
-% Display the result for this slice usng ellipses
+% Display the result for this slice using ellipses
 phi = linspace(0,2*pi,50);
 cosphi = cos(phi);
 sinphi = sin(phi);
@@ -181,7 +184,7 @@ end
 hold off
 %
 F = getframe(hF);
-imwrite(F.cdata,fullfile(output_dir,[sl_name '_classification.png']));
+imwrite(F.cdata,fullfile(output_dir_img,[sl_name '_classification.png']));
 close(hF);
 %%%%%%%%%%%%%%%%%%%%%%%%%
 % Change atlas background to white
@@ -204,7 +207,7 @@ atlas_im_rgb = cat(3,atlas_im_r,atlas_im_g,atlas_im_b);
 hF2=figure;
 imshow(atlas_im_rgb,'Border','tight');
 F2 = getframe(hF2);
-imwrite(F2.cdata,fullfile(output_dir,[sl_name '_atlasrgb.png']));
+imwrite(F2.cdata,fullfile(output_dir_img,[sl_name '_atlasrgb.png']));
 close(hF2);
 %%%%%%%%%%%%%%%%%%%%%%%%%
 % Plot the blend
@@ -212,7 +215,7 @@ hF3=figure;
 C=imlincomb(0.4,atlas_im_rgb,0.6,slice_im);
 imshow(C,'Border','tight');
 F3 = getframe(hF3);
-imwrite(F3.cdata,fullfile(output_dir,[sl_name '_blend.png']));
+imwrite(F3.cdata,fullfile(output_dir_img,[sl_name '_blend.png']));
 close(hF3);
 %%%%%%%%%%%%%%%%%%%%%%%%%
 % Plot all together
@@ -229,7 +232,7 @@ for iC=1:length(centroids)
 end
 hold off
 F4 = getframe(hF4);
-imwrite(F4.cdata,fullfile(output_dir,[sl_name '_blend_objects.png']));
+imwrite(F4.cdata,fullfile(output_dir_img,[sl_name '_blend_objects.png']));
 close(hF4);
 
 % Prepare the output

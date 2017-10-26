@@ -15,31 +15,8 @@ else
 end
 
 % Check that the JSONlab is in the path and do something about it
-if ~(exist('loadjson','file')==2)
-    try
-        %install local
-        if exist('jsonlab-1.5','dir')
-            addpath(genpath(fullfile(pwd,'jsonlab-1.5')));
-        else  %install on the nesys server
-            if exist('Z:\NESYS_Tools\Matlab\jsonlab-1.5','dir')
-                addpath(genpath('Z:\NESYS_Tools\Matlab\jsonlab-1.5'));
-            elseif exist('Y:\NESYS_Tools\Matlab\jsonlab-1.5','dir')
-                addpath(genpath('Y:\NESYS_Tools\Matlab\jsonlab-1.5'));
-            end
-        end
-        if ~(exist('loadjson','file')==2)
-            error('quantify_dataset:add_jsonlab',['Program tried to add the ',...
-                'JSONlab package without success. Please follow instruction',...
-                'on the README document to install the package']);
-        end
-    catch
-        error('quantify_dataset:add_jsonlab',['Program tried to add the ',...
-            'JSONlab package without success. Please follow instruction',...
-            'on the README document to install the package']);
-    end
-else
-    fprintf(1,'\nJSONlab toolbox is detected.\n');
-end
+checkJson();
+
 
 %%% Parsing inputs
 % Open the study info JSON
@@ -145,11 +122,16 @@ end
 %%% Init for loop and loop on all the images
 n_objects = 0;
 n_regions = 0;
-output_xls_obj_ind = fullfile(output_dir,[study_name '_obj_ind.xlsx']);
-output_xls_reg_ind = fullfile(output_dir,[study_name '_reg_ind.xlsx']);
+output_dir_xls = fullfile(output_dir,'excel');
+if ~exist(output_dir_xls,'dir')
+    mkdir(output_dir_xls);
+end
+output_xls_obj_ind = fullfile(output_dir_xls,[study_name '_obj_ind.xlsx']);
+output_xls_reg_ind = fullfile(output_dir_xls,[study_name '_reg_ind.xlsx']);
 %
 GlobalStats.objects = [];
 GlobalStats.regions = [];
+GlobalStats.study_info = study_info;
 %
 for iS = 1:n_slice
     %
@@ -300,30 +282,27 @@ for iS = 1:n_slice
     %Clear metadata not to mix information between sections
     clear metadata
 end
-% if exist('RemoveSheet123','file')==2
-%     RemoveSheet123(output_xls_obj_ind);
-%     RemoveSheet123(output_xls_obj_ind);
-% end
 
-%%% Write output
+%%% Write output as json
 GlobalStats.n_objects = n_objects;
 GlobalStats.n_regions = n_regions;
-%as json
-output_json = fullfile(output_dir,[study_name '_obj_reg_data.json']);
+%objects
+output_json = fullfile(output_dir,[study_name '_objects.json']);
 savejson('',GlobalStats,output_json);
-sp_json = fullfile(output_dir,[study_name '_sp_data.json']);
+%spatial data in a standard way 
+output_dir_spcoord = fullfile(output_dir,'sp_query');
+if ~exist(output_dir_spcoord,'dir')
+    mkdir(output_dir_spcoord);
+end
+sp_json = fullfile(output_dir_spcoord,[study_name '_spatial_data.json']);
 savejson('',SPcoord,sp_json);
-%as excel
+
+%%% Write output as excel through table
 objects = struct2table(GlobalStats.objects);
 regions = struct2table(GlobalStats.regions);
-%as txt for meshview
-obj_coord_atlas = vertcat(GlobalStats.objects(:).object_centroid_atlas);
-fid1 = fopen(fullfile(output_dir,[study_name '_obj_meshview.txt']),'w+');
-fprintf(fid1,'%d,%d,%d\n',round(obj_coord_atlas'));
-fclose(fid1);
 %
-output_xls_obj = fullfile(output_dir,[study_name '_obj.xlsx']);
-output_xls_reg = fullfile(output_dir,[study_name '_reg.xlsx']);
+output_xls_obj = fullfile(output_dir_xls,[study_name '_obj.xlsx']);
+output_xls_reg = fullfile(output_dir_xls,[study_name '_reg.xlsx']);
 %
 writetable(objects,output_xls_obj);
 writetable(regions,output_xls_reg);
@@ -331,6 +310,8 @@ writetable(regions,output_xls_reg);
 t_p = toc;
 fprintf(1,'\nAnalysis completed in %.0f seconds\n',t_p);
 return
+
+
 
 function struct_txt = load_txt(filename, startRow, endRow)
 %IMPORTFILE Import text from the automatically generated text file that
@@ -415,7 +396,7 @@ struct_txt = raw;
 
 return
 
-function [outData] = unit_convert(inData,inUnits,outUnits)
+function outData = unit_convert(inData,inUnits,outUnits)
 %
 conversionFactors = {
     'length',...
@@ -467,4 +448,32 @@ out = cellfun(fun,formatsAvail,'UniformOutput',false);
 idxToKeep = any(horzcat(out{:}),2);
 % Keep only the images and create a list
 ctn_out = ctn_in(idxToKeep);
+return
+
+function checkJson()
+if ~(exist('loadjson','file')==2)
+    try
+        %install local
+        if exist('jsonlab-1.5','dir')
+            addpath(genpath(fullfile(pwd,'jsonlab-1.5')));
+        else  %install on the nesys server
+            if exist('Z:\NESYS_Tools\Matlab\jsonlab-1.5','dir')
+                addpath(genpath('Z:\NESYS_Tools\Matlab\jsonlab-1.5'));
+            elseif exist('Y:\NESYS_Tools\Matlab\jsonlab-1.5','dir')
+                addpath(genpath('Y:\NESYS_Tools\Matlab\jsonlab-1.5'));
+            end
+        end
+        if ~(exist('loadjson','file')==2)
+            error('quantify_dataset:add_jsonlab',['Program tried to add the ',...
+                'JSONlab package without success. Please follow instruction',...
+                'on the README document to install the package']);
+        end
+    catch
+        error('quantify_dataset:add_jsonlab',['Program tried to add the ',...
+            'JSONlab package without success. Please follow instruction',...
+            'on the README document to install the package']);
+    end
+else
+    fprintf(1,'\nJSONlab toolbox is detected.\n');
+end
 return

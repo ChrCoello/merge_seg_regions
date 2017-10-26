@@ -38,22 +38,6 @@
          inkscape:connector-curvature="0" />
     </marker>
     <marker
-       inkscape:isstock="true"
-       style="overflow:visible"
-       id="marker4886"
-       refX="0"
-       refY="0"
-       orient="auto"
-       inkscape:stockid="Arrow1Mend"
-       inkscape:collect="always">
-      <path
-         transform="matrix(-0.4,0,0,-0.4,-4,0)"
-         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
-         d="M 0,0 5,-5 -12.5,0 5,5 0,0 Z"
-         id="path4888"
-         inkscape:connector-curvature="0" />
-    </marker>
-    <marker
        inkscape:stockid="Arrow1Mend"
        orient="auto"
        refY="0"
@@ -208,10 +192,10 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.05"
-     inkscape:cx="301.72687"
+     inkscape:cx="66.012584"
      inkscape:cy="87.211974"
      inkscape:document-units="mm"
-     inkscape:current-layer="layer2"
+     inkscape:current-layer="layer1"
      showgrid="true"
      inkscape:window-width="1680"
      inkscape:window-height="975"
@@ -271,7 +255,7 @@
        id="path6966"
        inkscape:connector-curvature="0" />
     <rect
-       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:1.16122866;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:2.12598425;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect4424"
        width="246.87027"
        height="69.70491"
@@ -280,7 +264,7 @@
        rx="17.092857"
        ry="16.992046" />
     <rect
-       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:1.16123044;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:2.12598425;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect4424-3"
        width="246.87096"
        height="69.70491"
@@ -289,7 +273,7 @@
        rx="17.092905"
        ry="16.992048" />
     <rect
-       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:1.02997565;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:2.12598425;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect4424-3-0"
        width="193.85191"
        height="69.836166"
@@ -298,7 +282,7 @@
        rx="13.421961"
        ry="17.024044" />
     <rect
-       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:1.02997565;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:2.12598425;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect4424-3-0-8"
        width="193.85191"
        height="69.836166"
@@ -352,12 +336,6 @@
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.41732287;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker4886)"
-       d="m 141.73228,361.41732 -106.299209,0 0,248.0315 88.582679,0 0,14.90568"
-       id="path6091"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="ccccc" />
-    <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.41732287;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker6509)"
        d="m 141.73228,609.44882 230.31496,0 0,14.90568"
        id="path6501"
@@ -365,7 +343,7 @@
        sodipodi:nodetypes="ccc" />
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.41732287;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow1Mend-9-9)"
-       d="m 212.95276,697.87198 0,46.27425"
+       d="m 212.95276,698.80544 0,29.4707"
        id="path4142-3-4"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
@@ -401,7 +379,8 @@
          sodipodi:role="line"
          id="tspan4138"
          x="167.6879"
-         y="328.60593">study_info.json</tspan></text>
+         y="328.60593"
+         style="-inkscape-font-specification:'sans-serif, Normal';font-family:sans-serif;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;font-size:12.5px;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%">study_info.json</tspan></text>
     <text
        transform="translate(-31.181102,-313.59289)"
        xml:space="preserve"
@@ -414,7 +393,7 @@
          id="tspan4138-4"
          x="181.58882"
          y="345.64099"
-         style="font-size:12.5px">&quot;study_name&quot;: &quot;cross_m287&quot;</tspan></text>
+         style="font-size:11.25px;-inkscape-font-specification:'sans-serif, Normal';font-family:sans-serif;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%">&quot;study_name&quot;: &quot;cross_m287&quot;</tspan></text>
     <text
        transform="translate(-31.181102,-313.59289)"
        xml:space="preserve"
@@ -426,7 +405,8 @@
          sodipodi:role="line"
          id="tspan4138-9"
          x="159.9489"
-         y="478.86642">cross_m287_objects.json</tspan></text>
+         y="478.86642"
+         style="-inkscape-font-specification:'sans-serif, Normal';font-family:sans-serif;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;font-size:12.5px;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%">cross_m287_objects.json</tspan></text>
     <text
        transform="translate(-31.181102,-313.59289)"
        xml:space="preserve"
@@ -438,20 +418,20 @@
          sodipodi:role="line"
          id="tspan4138-9-9"
          x="159.20987"
-         y="591.42804">cross_m287_regions.json</tspan></text>
+         y="591.42804"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start">cross_m287_objects_per_region.json</tspan></text>
     <text
-       transform="translate(-31.181102,-313.59289)"
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:15px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="35.440666"
-       y="714.70691"
+       x="10.92623"
+       y="429.68546"
        id="text4136-4-9-0"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
          id="tspan4138-9-9-9"
-         x="35.440666"
-         y="714.70691"
-         style="font-size:12.5px">cross_m287_hierarchy.json</tspan></text>
+         x="10.92623"
+         y="429.68546"
+         style="font-size:12.5px">cross_m287_objects_per_hierarchy.json</tspan></text>
     <text
        transform="translate(-31.181102,-313.59289)"
        xml:space="preserve"
@@ -573,5 +553,16 @@
          x="34.671352"
          y="102.00749"
          id="tspan4808">as individual objects</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:15px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="234.56693"
+       y="278.13937"
+       id="text4278"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4280"
+         x="234.56693"
+         y="278.13937"></tspan></text>
   </g>
 </svg>
