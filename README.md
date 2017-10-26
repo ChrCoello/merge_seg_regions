@@ -1,5 +1,5 @@
 # Combining segmentations and spatial information
-Repository gathering Matlab scripts combining section segmentations from [Ilastik](www.ilastik.org) software and spatial information (atlas regions) obtained after anchoring using QuickNII.
+Repository gathering Matlab scripts combining segmentation maps from [Ilastik](www.ilastik.org) software and spatial information (atlas regions) obtained after anchoring using QuickNII.
 ![example](images/example_img.png)
 The main objective is to provide regional information about the objects (single cells, plaques, etc...) extracted from the microscopy sections.
 
@@ -8,7 +8,8 @@ Any request about these scripts should be directed to christopher dot coello at 
 ***Important: these scripts have been developped for the Allen Mouse Brain Atlas at 25 \(\mu m\) resoution. Even if extending the script to other atlases might be trivial, no test have been made with rat or human atlases. In addition, real world spatial coordinates will be incorrect when changing atlas (because of orientation standards)***
 
 ## General description of the workflow
-The workflow can be decomposed in two or three major steps.
+The workflow can be decomposed in four steps, described in the workflow.
+![example](images/workflow_script.svg)
 
 The first step (`quantify_dataset.m`) is to generate a list of all the individual objects together with the region they belong to. The second step (`combine_obj_seg.m`) is to combine these individual objects to obtain regional information. The third step (optional, `combine_hierarchy.m`) is to gather regions following a hierarchy to generate results at a coarse regional level.
 
