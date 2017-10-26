@@ -40,7 +40,7 @@ reg_pixel_lst = [reg_struct(:).pixel];
 reg_idx_lst = [reg_struct(:).idx];
 reg_idx_lst_unq = reg_idx_lst(idx_reg_name_lst_unq);
 %
-reg_clr_lst = vertcat(reg_struct(:).clr);
+reg_clr_lst = vertcat(reg_struct(:).rgb);
 reg_clr_lst_unq = reg_clr_lst(idx_reg_name_lst_unq,:);
 %
 % Check units
@@ -62,7 +62,7 @@ reg_info = repmat(reg_empty,n_unq_reg,1);
 for iR = 1 : n_unq_reg
     reg_info(iR).name = reg_name_lst_unq{iR};
     reg_info(iR).idx  = reg_idx_lst_unq(iR);
-    reg_info(iR).clr  = reg_clr_lst_unq(iR,:);
+    reg_info(iR).rgb  = reg_clr_lst_unq(iR,:);
     reg_info(iR).pxl  = sum(reg_pixel_lst(reg_idx_lst==reg_idx_lst_unq(iR)));
     reg_info(iR).area = sum(reg_area_lst(reg_idx_lst==reg_idx_lst_unq(iR)));
 end
@@ -76,7 +76,7 @@ obj_area_units_lst = {obj_struct(:).object_area_units};
 %
 obj_pixel_lst = [obj_struct(:).object_pixel];
 %
-obj_idx_lst     = [obj_struct(:).region_lbl];
+obj_idx_lst     = [obj_struct(:).region_idx];
 obj_idx_lst_unq = obj_idx_lst(idx_obj_name_lst_unq);
 %
 obj_coord_lst = vertcat(obj_struct(:).object_centroid_atlas);
@@ -139,7 +139,7 @@ for iR = 1 : n_reg
     stats(iR).reg_idx  = reg_info(iR).idx;
     stats(iR).reg_pxl  = reg_info(iR).pxl;
     stats(iR).reg_area = reg_info(iR).area;
-    stats(iR).reg_clr  = reg_info(iR).clr; 
+    stats(iR).reg_rgb  = reg_info(iR).rgb; 
     stats(iR).reg_area_unit = reg_info(iR).area_unit;
     if ~(idx_obj_in_reg==0)
         %

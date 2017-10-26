@@ -53,7 +53,7 @@ end
 %%% Parsing required name/value pair from JSON
 study_name     = validate_input(study_info,'study_name');
 slice_dir      = validate_input(study_info,'slice_dir');
-slice_ori      = validate_input(study_info,'slice_ori');
+% slice_ori      = validate_input(study_info,'slice_ori');
 atlas_dir      = validate_input(study_info,'atlas_dir');
 atlas_lbl_file = validate_input(study_info,'atlas_lbl_file');
 seg_dir        = validate_input(study_info,'seg_dir');
@@ -108,8 +108,7 @@ sysinfo.matlabVersion = version;
 %
 GlobalStats.date_analysis = datestr(now);
 GlobalStats.system_info = sysinfo;
-GlobalStats.objects = [];
-GlobalStats.regions = [];
+%
 SPcoord.type = 'FeatureCollection';
 SPcoord.features = [];
 % To be modified if rat or mouse 10um
@@ -120,9 +119,9 @@ seg_dir_ctn_raw = dir(seg_dir);
 seg_dir_ctn = keep_images(seg_dir_ctn_raw);
 %
 n_slice = length(seg_dir_ctn);
-GlobalStats.n_slices  = n_slice;
-GlobalStats.n_objects = NaN;
-GlobalStats.n_regions = NaN;
+GlobalStats.n_sections = n_slice;
+GlobalStats.n_objects  = NaN;
+GlobalStats.n_regions  = NaN;
 %
 fprintf(1,'\nTotal number of section detected to analyse: %d\n',n_slice);
 
@@ -148,6 +147,9 @@ n_objects = 0;
 n_regions = 0;
 output_xls_obj_ind = fullfile(output_dir,[study_name '_obj_ind.xlsx']);
 output_xls_reg_ind = fullfile(output_dir,[study_name '_reg_ind.xlsx']);
+%
+GlobalStats.objects = [];
+GlobalStats.regions = [];
 %
 for iS = 1:n_slice
     %
@@ -182,7 +184,7 @@ for iS = 1:n_slice
     
     % Fetch the resolution of the input section
     % either in the metadata file or in the txt file or in the tif file
-    metadata.slice_ori = slice_ori;
+%     metadata.slice_ori = slice_ori;
     if ~is_spinfo
         % No real world info
         metadata.x_pixel_size = [];

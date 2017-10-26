@@ -45,7 +45,7 @@ atlas_im_size = size(atlas_im);
 for iR = 1:length(lbl_lst)
     seg_stats(iR).name  = lbl_lst{iR};
     seg_stats(iR).idx   = lbl_idx(iR);
-    seg_stats(iR).clr   = lbl_clr(iR,:);
+    seg_stats(iR).rgb   = lbl_clr(iR,:);
     seg_stats(iR).pixel = lbl_pixel(iR);
     if is_spinfo
         seg_stats(iR).area  = lbl_pixel(iR) * pixel_area_dw;
@@ -107,18 +107,9 @@ for iL = 1:n_obj
         objcentpix_height_width_norm =...
             [obj_stats(iR).object_centroid_pixel(2),...
             obj_stats(iR).object_centroid_pixel(1)]./seg_im_size;
-        switch metadata.slice_ori
-            case 'coronal'
-                obj_stats(iR).object_centroid_atlas = metadata.o_vec +...
+        obj_stats(iR).object_centroid_atlas = metadata.o_vec +...
                     metadata.u_vec * objcentpix_height_width_norm(2) +...
                     metadata.v_vec * objcentpix_height_width_norm(1);
-            case 'sagittal'
-                obj_stats(iR).object_centroid_atlas = metadata.o_vec +...
-                    metadata.u_vec * objcentpix_height_width_norm(2) +...
-                    metadata.v_vec * objcentpix_height_width_norm(1);
-            otherwise
-                obj_stats(iR).object_centroid_atlas = [NaN NaN NaN];
-        end
         obj_stats(iR).object_centroid_atlas_units = 'ABA voxel 25um';
         % Verification that the coordinates calculated are within the ABA
         % space size
@@ -136,9 +127,9 @@ for iL = 1:n_obj
         obj_stats(iR).object_meanG    = statsG(iL).MeanIntensity;
         obj_stats(iR).object_meanB    = statsB(iL).MeanIntensity;
         % Region belonging properties
-        obj_stats(iR).region_lbl      = atlas_im(round(stats(iL).Centroid(2)),round(stats(iL).Centroid(1)));
-        obj_stats(iR).region_name     = lbl_lst{lbl_idx==obj_stats(iR).region_lbl};
-        obj_stats(iR).region_rgb      = squeeze(atlas_im_rgb(round(stats(iL).Centroid(2)),round(stats(iL).Centroid(1)),:));
+        obj_stats(iR).region_idx      = atlas_im(round(stats(iL).Centroid(2)),round(stats(iL).Centroid(1)));
+        obj_stats(iR).region_name     = lbl_lst{lbl_idx==obj_stats(iR).region_idx};
+        obj_stats(iR).region_rgb      = squeeze(atlas_im_rgb(round(stats(iL).Centroid(2)),round(stats(iL).Centroid(1)),:))';
         % Slice information
         obj_stats(iR).slice_name      = sl_name;
         obj_stats(iR).slice_size      = seg_im_size;
