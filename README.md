@@ -15,8 +15,7 @@ The workflow can be decomposed in four steps, described in the workflow.
 The first step (`quantify_dataset.m`) is to generate a list of all the individual objects together with the region they belong to. The second step (`combine_obj_seg.m`) is to combine these individual objects to obtain regional information. The third step (optional, `combine_hierarchy.m`) is to gather regions following a hierarchy to generate results at a coarse regional level.
 
 ## Usage
-**Classify segmented maps
-as individual objects** : generate list of individual objects and its associated regions
+**Classify segmented maps as individual objects** : generate list of individual objects and its associated regions
 ```matlabsession
 >> study_info_fn = 'C:\data\test\cs\study_info.json';
 >> study_objects = quantify_dataset(study_info_fn);
@@ -83,7 +82,7 @@ The input is formatted as a JSON file. This JSON file is referred as `study_info
 * **"pixel_dim"** pixel edge dimension in micrometers of the pixel in the images in **"seg_dir"**
 
 ## Outputs
-**Step 1 output:** a list of individual objects and its associated regions as a JSON file. The name of the file is composed of "study_name" followed by *\_obj_reg_data.json* and is located in "output_dir". Each object have the following fields:
+**List of individual objects** a list of individual objects and its associated regions as a JSON file. The name of the file is composed of "study_name" followed by *\_objects.json* and is located in "output_dir". Each object have the following fields:
 
 ```json
 {
@@ -135,7 +134,7 @@ and with ``` "regions" ``` being composed of a list of regions identified in the
 ]
 ```
 
-**Step 2 output:** a file (JSON) that lists, per region, the number of objects detected (```"obj_cnt"```), the atlas coordinate of the centroid of each object (```"obj_coord"```), the total number of pixel covered by the objects (object load, ```"obj_pxl"```), the area in real world units (```"obj_area"```).
+**List of regions with each object coordinate** : a file (JSON, "study_name" followed by *\_objects_per_region.json*) that lists, per region, the number of objects detected (```"obj_cnt"```), the atlas coordinate of the centroid of each object (```"obj_coord"```), the total number of pixel covered by the objects (object load, ```"obj_pxl"```), the area in real world units (```"obj_area"```).
 Example:
 
 ```json
@@ -165,7 +164,22 @@ Example:
 ]
 ```
 
-**Step 3**
+**Gathering regions per hierarchy** : a file (JSON, "study_name" followed by *\_objects_per_hierarchy.json*) that lists, per region, the same information than the object per region but gathered by hierarchy.
+
+**Meshview output per region** : a text fileformatted to be copy/pasted in Meshview to visualise the object as crosses of different colors. Each object has the color defined in the atlas.
+```txt
+RGBA 0.129 0.596 0.400 1 # RGBA
+161,431,155
+153,433,148
+153,432,152
+316,417,135
+147,428,142
+141,427,146
+RGBA 0.129 0.596 0.400 1 # RGBA
+320,411,159
+146,426,147
+RGBA 0.129 0.596 0.400 1 # RGB
+```
 
 ## Important
 
