@@ -9,7 +9,9 @@ Any request about these scripts should be directed to christopher dot coello at 
 
 ## General description of the workflow
 The workflow can be decomposed in four steps, described in the workflow.
-![example](images/workflow_script.svg)
+<p align="center">
+<img_src="images/workflow_script.svg")
+</p>
 
 The first step (`quantify_dataset.m`) is to generate a list of all the individual objects together with the region they belong to. The second step (`combine_obj_seg.m`) is to combine these individual objects to obtain regional information. The third step (optional, `combine_hierarchy.m`) is to gather regions following a hierarchy to generate results at a coarse regional level.
 
