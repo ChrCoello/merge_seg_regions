@@ -18,7 +18,8 @@
    sodipodi:docname="workflow_script.svg"
    inkscape:export-filename="C:\data\GitHub\merge_seg_regions\images\workflow_script.png"
    inkscape:export-xdpi="300"
-   inkscape:export-ydpi="300">
+   inkscape:export-ydpi="300"
+   enable-background="new">
   <defs
      id="defs4">
     <marker
@@ -188,6 +189,16 @@
          style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
          transform="matrix(-0.4,0,0,-0.4,-4,0)" />
     </marker>
+    <filter
+       inkscape:collect="always"
+       style="color-interpolation-filters:sRGB"
+       id="filter4381">
+      <feBlend
+         inkscape:collect="always"
+         mode="screen"
+         in2="BackgroundImage"
+         id="feBlend4383" />
+    </filter>
   </defs>
   <sodipodi:namedview
      id="base"
@@ -196,9 +207,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1"
-     inkscape:cx="-128.92677"
-     inkscape:cy="70.189903"
+     inkscape:zoom="1.05"
+     inkscape:cx="301.72687"
+     inkscape:cy="87.211974"
      inkscape:document-units="mm"
      inkscape:current-layer="layer2"
      showgrid="true"
@@ -233,7 +244,8 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-31.181102,-313.59289)">
+     transform="translate(-31.181102,-313.59289)"
+     style="filter:url(#filter4381)">
     <path
        style="fill:#ffccaa;fill-opacity:1;stroke:none;stroke-width:0.96584225;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        d="m 62.063071,387.4419 c -2.526771,-1.24926 -6.89712,-6.61899 -7.953229,-10.42052 -0.368028,-1.32474 0.03701,-4.63186 0.03543,-7.34917 l -0.0035,-6.10511 192.687518,0 0.0755,7.46802 c 0.0542,5.365 -0.22557,6.84647 -1.90984,9.93126 -1.0894,1.99528 -3.83837,5.24533 -5.12008,5.82001 l -1.72631,1.4811 -86.88556,-0.19488 c -80.171846,-0.17982 -87.064385,0.42505 -89.199859,-0.63071 z"
@@ -296,14 +308,16 @@
        ry="17.024044" />
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.41732287;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow1Mend)"
-       d="m 141.73998,327.72764 0,49.37717"
+       d="m 141.73998,327.72764 0,48.66978"
        id="path4142"
-       inkscape:connector-curvature="0" />
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.41732287;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow1Mend-9)"
-       d="m 141.73998,451.74339 0,49.37717"
+       d="m 141.73998,450.67931 0,49.73385"
        id="path4142-3"
-       inkscape:connector-curvature="0" />
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.63384581;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="m 177.66535,332.18645 0,28.34646"
@@ -311,9 +325,10 @@
        inkscape:connector-curvature="0" />
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.41732287;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow1Mend-9-1)"
-       d="m 141.73998,574.90503 0,51.14817"
+       d="m 141.73998,574.90503 0,49.44947"
        id="path4142-3-3"
-       inkscape:connector-curvature="0" />
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="m 53.149606,424.69685 248.031494,0"
@@ -338,25 +353,38 @@
        sodipodi:nodetypes="cc" />
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.41732287;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker4886)"
-       d="m 141.73228,361.41732 -106.299209,0 0,248.0315 88.582679,0 0,17.71653"
+       d="m 141.73228,361.41732 -106.299209,0 0,248.0315 88.582679,0 0,14.90568"
        id="path6091"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="ccccc" />
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.41732287;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker6509)"
-       d="m 141.73228,609.44882 230.31496,0 0,17.71653"
+       d="m 141.73228,609.44882 230.31496,0 0,14.90568"
        id="path6501"
-       inkscape:connector-curvature="0" />
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccc" />
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.41732287;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow1Mend-9-9)"
-       d="m 213.97425,697.04906 0,49.37717"
+       d="m 212.95276,697.87198 0,46.27425"
        id="path4142-3-4"
-       inkscape:connector-curvature="0" />
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
     <path
        style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.41732287;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow1Mend-9-92)"
        d="m 444.97066,698.41197 0,49.37717"
        id="path4142-3-7"
        inkscape:connector-curvature="0" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:15px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="88.582672"
+       y="822.04724"
+       id="text4772"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4774"
+         x="88.582672"
+         y="822.04724" /></text>
   </g>
   <g
      inkscape:groupmode="layer"
@@ -489,49 +517,61 @@
          x="267.11594"
          y="714.70691"
          style="font-size:12.5px">cross_m287_meshview.txt</tspan></text>
-    <flowRoot
+    <text
        xml:space="preserve"
-       id="flowRoot5108"
        style="font-style:normal;font-weight:normal;font-size:15px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       transform="translate(-22.144825,-2.57911)"><flowRegion
-         id="flowRegion5110"><rect
-           id="rect5112"
-           width="194.8819"
-           height="53.149609"
-           x="53.149605"
-           y="70.866135" /></flowRegion><flowPara
-         id="flowPara5114">Classify segmented maps as individual objects</flowPara></flowRoot>    <flowRoot
+       x="34.671352"
+       y="332.16638"
+       id="text4776"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         x="34.671352"
+         y="332.16638"
+         id="tspan4780">Combine regions using </tspan><tspan
+         sodipodi:role="line"
+         x="34.671352"
+         y="350.91638"
+         id="tspan4792">a hierarchy</tspan></text>
+    <text
        xml:space="preserve"
-       id="flowRoot5108-3"
        style="font-style:normal;font-weight:normal;font-size:15px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       transform="translate(-17.471027,122.62506)"><flowRegion
-         id="flowRegion5110-5"><rect
-           id="rect5112-8"
-           width="216.60489"
-           height="49.215126"
-           x="53.149605"
-           y="70.866135" /></flowRegion><flowPara
-         id="flowPara5114-8">Combine objects per region</flowPara></flowRoot>    <flowRoot
+       x="270"
+       y="331.289"
+       id="text4794"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4796"
+         x="270"
+         y="331.289">Generate text files </tspan><tspan
+         sodipodi:role="line"
+         x="270"
+         y="350.039"
+         id="tspan4798">for Meshview</tspan></text>
+    <text
        xml:space="preserve"
-       id="flowRoot5108-3-7-7"
        style="font-style:normal;font-weight:normal;font-size:15px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       transform="translate(212.84464,246.64078)"><flowRegion
-         id="flowRegion5110-5-5-2"><rect
-           id="rect5112-8-8-0"
-           width="145.73874"
-           height="49.215118"
-           x="53.149605"
-           y="70.866135" /></flowRegion><flowPara
-         id="flowPara5114-8-1-6">Generate text files for Meshview</flowPara></flowRoot>    <flowRoot
+       x="34.590786"
+       y="209.04614"
+       id="text4800"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4802"
+         x="34.590786"
+         y="209.04614">Combine objects per region</tspan></text>
+    <text
        xml:space="preserve"
-       id="flowRoot5108-3-7"
        style="font-style:normal;font-weight:normal;font-size:15px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       transform="translate(-17.471027,246.35735)"><flowRegion
-         id="flowRegion5110-5-5"><rect
-           id="rect5112-8-8"
-           width="145.73874"
-           height="49.215118"
-           x="53.149605"
-           y="70.866135" /></flowRegion><flowPara
-         id="flowPara5114-8-1">Combine regions using a hierarchy</flowPara></flowRoot>  </g>
+       x="34.671352"
+       y="83.257492"
+       id="text4804"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4806"
+         x="34.671352"
+         y="83.257492">Classify segmented maps </tspan><tspan
+         sodipodi:role="line"
+         x="34.671352"
+         y="102.00749"
+         id="tspan4808">as individual objects</tspan></text>
+  </g>
 </svg>
