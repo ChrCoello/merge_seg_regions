@@ -154,6 +154,7 @@ phi = linspace(0,2*pi,50);
 cosphi = cos(phi);
 sinphi = sin(phi);
 %
+warning('off', 'Images:initSize:adjustingMag');
 hF=figure;
 imshow(slice_im,'Border','tight');
 hold on
