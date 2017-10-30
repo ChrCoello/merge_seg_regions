@@ -79,7 +79,7 @@ The input is formatted as a JSON file. This JSON file is referred as `study_info
 
 * **"allen_json"** location of the JSON file containing the information of the whole dataset as generated per Allen Institute.
 
-* **"pixel_dim"** pixel edge dimension in micrometers of the pixel in the images in **"seg_dir"**
+* **"pixel_dim"** pixel edge dimension in micrometers of the pixel in the images in **"seg_dir"** (ex. 0.22 um per pixel)
 
 ## Outputs
 
@@ -237,3 +237,7 @@ The segmentation folder **"seg_dir"** defines the sections to be analysed. There
 addpath('/to/the/given/path')
 ```
 in the commend window of Matlab before starting the program.
+
+
+## Test data
+Test data can be found at : (TO BE FINISHED)
