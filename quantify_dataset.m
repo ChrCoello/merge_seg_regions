@@ -126,8 +126,8 @@ output_dir_xls = fullfile(output_dir,'excel');
 if ~exist(output_dir_xls,'dir')
     mkdir(output_dir_xls);
 end
-output_xls_obj_ind = fullfile(output_dir_xls,[study_name '_obj_ind.xlsx']);
-output_xls_reg_ind = fullfile(output_dir_xls,[study_name '_reg_ind.xlsx']);
+output_xls_obj_ind = fullfile(output_dir_xls,[study_name '_objects_ind.xlsx']);
+output_xls_reg_ind = fullfile(output_dir_xls,[study_name '_regions_ind.xlsx']);
 %
 GlobalStats.objects = [];
 GlobalStats.regions = [];
@@ -163,7 +163,7 @@ for iS = 1:n_slice
     %%% Section
     slice_name = slice_dir_ctn(~cellfun('isempty',strfind({slice_dir_ctn(:).name},seg_id))).name;
     slice_name_file = fullfile(slice_dir,slice_name);
-    
+
     % Fetch the resolution of the input section
     % either in the metadata file or in the txt file or in the tif file
 %     metadata.slice_ori = slice_ori;
@@ -219,7 +219,7 @@ for iS = 1:n_slice
             allen_sec_idx = find([allen_sec(:).section_number]==str2double(seg_id));
             if isempty(allen_sec_idx)
             else
-               metadata.x_pixel_size    = allen_sec(allen_sec_idx).resolution; 
+               metadata.x_pixel_size    = allen_sec(allen_sec_idx).resolution;
                metadata.y_pixel_size    = allen_sec(allen_sec_idx).resolution;
                metadata.pixel_size_unit = 'um';
                metadata.width  = allen_sec(allen_sec_idx).image_width;
@@ -235,7 +235,7 @@ for iS = 1:n_slice
             metadata.height = [];
         end
     end
-    
+
     %%% Transformation vectors and matrix
     if ~isempty(sections_coord)
         idx_seg_mat = ~cellfun('isempty',...
@@ -261,7 +261,7 @@ for iS = 1:n_slice
         output_dir,...
         obj_lbl,...
         metadata);
-    
+
     %%% Concatenate the individual objects with the ones from preivous
     % sections
     n_objects =+ length(obj_stats);
@@ -289,7 +289,7 @@ GlobalStats.n_regions = n_regions;
 %objects
 output_json = fullfile(output_dir,[study_name '_objects.json']);
 savejson('',GlobalStats,output_json);
-%spatial data in a standard way 
+%spatial data in a standard way
 output_dir_spcoord = fullfile(output_dir,'sp_query');
 if ~exist(output_dir_spcoord,'dir')
     mkdir(output_dir_spcoord);
@@ -301,8 +301,8 @@ savejson('',SPcoord,sp_json);
 objects = struct2table(GlobalStats.objects);
 regions = struct2table(GlobalStats.regions);
 %
-output_xls_obj = fullfile(output_dir_xls,[study_name '_obj.xlsx']);
-output_xls_reg = fullfile(output_dir_xls,[study_name '_reg.xlsx']);
+output_xls_obj = fullfile(output_dir_xls,[study_name '_objects.xlsx']);
+output_xls_reg = fullfile(output_dir_xls,[study_name '_regions.xlsx']);
 %
 writetable(objects,output_xls_obj);
 writetable(regions,output_xls_reg);
@@ -371,7 +371,7 @@ for row=1:size(rawData, 1)
     try
         result = regexp(rawData{row}, regexstr, 'names');
         numbers = result.numbers;
-        
+
         % Detected commas in non-thousand locations.
         invalidThousandsSeparator = false;
         if any(numbers==',')
@@ -438,7 +438,7 @@ if isfield(study_info,field_nm)
 end
 
 function ctn_out = keep_images(ctn_in)
-%%% Get current image format list supported by the 
+%%% Get current image format list supported by the
 formatsAvail = {'jpg','png','tif'};
 
 listFiles = {ctn_in(:).name}';

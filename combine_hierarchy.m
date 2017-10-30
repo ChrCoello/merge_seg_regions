@@ -42,7 +42,7 @@ for iL = 1:length(list_reg)
         warning('No regions from hierarchy file %s could be found in the file %s. Skipping...\n',...
             hier_fn,stats_json_file)
     else
-       
+
         hier_nm = list_reg(iL).name(strfind(list_reg(iL).name,'_')+1:end-5);
         fprintf(1,' - Creating hierarchy %d / %d : %s\n',iL,length(list_reg),hier_nm);
         %
@@ -74,7 +74,7 @@ if ~exist(output_dir_xls,'dir')
     mkdir(output_dir_xls);
 end
 plaques = struct2table(hier_region);
-hier_xls_file = fullfile(output_dir_xls,sprintf('%s_objects_per_hierarchy.xlsx',json_fn));
+hier_xls_file = fullfile(output_dir_xls,sprintf('%s_objects_per_hierarchy.xlsx',info.study_name));
 writetable(plaques,hier_xls_file);
 
 return
