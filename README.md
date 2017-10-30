@@ -82,6 +82,19 @@ The input is formatted as a JSON file. This JSON file is referred as `study_info
 * **"pixel_dim"** pixel edge dimension in micrometers of the pixel in the images in **"seg_dir"**
 
 ## Outputs
+
+The output files will be written in the **"output_dir"** folder. The structure of the output folder is as follows :
+* output_dir
+  * study_name_objects.json : **List of individual objects**
+  * study_name_objects_per_region.json : **List of objects features per region**
+  * study_name_objects_per_hierarchy.json : **List of objects features per hierarchy**
+  * study_name_meshview.txt : **Meshview output per region**
+  * excel/  : folder containing the Excel versions of the JSON files
+  * qc_fig/ : folder containing the figures/images created during the classification procedure
+  * sp_query/ : folder containing a cleaned version of the list of individual objects for spatial query purposes (work with Darius, EPFL)
+  * meshview_ind_reg/ : folder containing the individual txt files per region for Meshview
+
+
 **List of individual objects** a list of individual objects and its associated regions as a JSON file. The name of the file is composed of "study_name" followed by *\_objects.json* and is located in "output_dir". Each object have the following fields:
 
 ```json
@@ -134,7 +147,7 @@ and with ``` "regions" ``` being composed of a list of regions identified in the
 ]
 ```
 
-**List of regions with each object coordinate** : a file (JSON, "study_name" followed by *\_objects_per_region.json*) that lists, per region, the number of objects detected (```"obj_cnt"```), the atlas coordinate of the centroid of each object (```"obj_coord"```), the total number of pixel covered by the objects (object load, ```"obj_pxl"```), the area in real world units (```"obj_area"```).
+**List of objects features per region** : a file (JSON, "study_name" followed by *\_objects_per_region.json*) that lists, per region, the number of objects detected (```"obj_cnt"```), the atlas coordinate of the centroid of each object (```"obj_coord"```), the total number of pixel covered by the objects (object load, ```"obj_pxl"```), the area in real world units (```"obj_area"```).
 Example:
 
 ```json
@@ -164,7 +177,7 @@ Example:
 ]
 ```
 
-**Gathering regions per hierarchy** : a file (JSON, "study_name" followed by *\_objects_per_hierarchy.json*) that lists, per region, the same information than the object per region but gathered by hierarchy.
+**List of objects features per hierarchy** : a file (JSON, "study_name" followed by *\_objects_per_hierarchy.json*) that lists, per region, the same information than the object per region but gathered by hierarchy.
 
 **Meshview output per region** : a text fileformatted to be copy/pasted in Meshview to visualise the object as crosses of different colors. Each object has the color defined in the atlas.
 ```txt
