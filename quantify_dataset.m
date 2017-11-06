@@ -427,11 +427,14 @@ end
 if isfield(study_info,field_nm)
     out_var     = study_info.(field_nm);
     if ~strcmp(type_entry,'none') && ~exist(out_var,type_entry)
-        fprintf('\n*********************** WRONG INPUT *********************\n');
-        fprintf('***   The program could not find the entry associated to the field "%s" : \n',field_nm);
-        fprintf('***   %s is either : \n',out_var);
-        fprintf('***   not existing or typed incorrectly : \n');
-        fprintf('***********************************************************\n');
+        fprintf('\n*********************** WRONG INPUT IN JSON ****************\n');
+        fprintf('*** The program could not find the entry associated to the field "%s" : \n',field_nm);
+        fprintf('*** %s\n',out_var);
+        fprintf('*** is either : \n')
+        fprintf('***  -> not existing \n');
+        fprintf('*** or\n'); 
+        fprintf('***  -> typed incorrectly \n');
+        fprintf('*************************************************************\n');
         error('Input JSON field %s not valid. Check entry as described above.',field_nm);
     end
 else
@@ -449,10 +452,13 @@ out_var = '';
 if isfield(study_info,field_nm)
     out_var     = study_info.(field_nm);
     if ~strcmp(type_entry,'none') && ~exist(out_var,type_entry)
-        fprintf('\n*********************** WRONG INPUT *********************\n');
-        fprintf('***   The program could not find the entry associated to the field "%s" : \n',field_nm);
-        fprintf('***   %s is either : \n',out_var);
-        fprintf('***   not existing or typed incorrectly : \n');
+        fprintf('\n*********************** WRONG INPUT IN JSON ****************\n');
+        fprintf('*** The program could not find the entry associated to the field "%s" : \n',field_nm);
+        fprintf('*** %s\n',out_var);
+        fprintf('*** is either : \n')
+        fprintf('***  -> not existing \n');
+        fprintf('*** or\n'); 
+        fprintf('***  -> typed incorrectly \n');
         fprintf('*************************************************************\n');
         error('Input JSON field %s not valid. Check entry as described above.',field_nm);
     end
