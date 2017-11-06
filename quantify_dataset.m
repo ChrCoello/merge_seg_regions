@@ -29,18 +29,18 @@ else
 end
 %%% Parsing required name/value pair from JSON
 study_name     = validate_input(study_info,'study_name');
-slice_dir      = validate_input(study_info,'slice_dir');
+slice_dir      = validate_input(study_info,'slice_dir','dir');
 % slice_ori      = validate_input(study_info,'slice_ori');
-atlas_dir      = validate_input(study_info,'atlas_dir');
-atlas_lbl_file = validate_input(study_info,'atlas_lbl_file');
-seg_dir        = validate_input(study_info,'seg_dir');
+atlas_dir      = validate_input(study_info,'atlas_dir','dir');
+atlas_lbl_file = validate_input(study_info,'atlas_lbl_file','file');
+seg_dir        = validate_input(study_info,'seg_dir','dir');
 obj_lbl        = validate_input(study_info,'obj_lbl');
-output_dir     = validate_input(study_info,'output_dir');
+output_dir     = validate_input(study_info,'output_dir','dir');
 %%% Parsing optional name/value pair from JSON
-original_dir   = validate_opt_input(study_info,'original_dir');
-allen_json     = validate_opt_input(study_info,'allen_json');
+original_dir   = validate_opt_input(study_info,'original_dir','dir');
+allen_json     = validate_opt_input(study_info,'allen_json','file');
 pixel_dim      = validate_opt_input(study_info,'pixel_dim');
-atlas_xml_file = validate_opt_input(study_info,'atlas_xml_file');
+atlas_xml_file = validate_opt_input(study_info,'atlas_xml_file','file');
 %
 % Take care of the real world mess
 is_spinfo = 0;
@@ -421,23 +421,44 @@ outData       = factorInToOut*inData;
 
 return
 
-function out_var = validate_input(study_info,field_nm)
+function out_var = validate_input(study_info,field_nm,varargin)
+type_entry = 'none';
+if nargin>2
+    type_entry = varargin{1};
+end
 % Validate existence of the field in the JSON file
 if isfield(study_info,field_nm)
     out_var     = study_info.(field_nm);
+    if ~strcmp(type_entry,'none') && ~exist(out_var,type_entry)
+        fprintf('\n*********************** WRONG INPUT *********************\n');
+        fprintf('***   The program could not find the entry associated to the field "%s" : \n',field_nm);
+        fprintf('***   %s is either : \n',out_var);
+        fprintf('***   not existing or typed incorrectly : \n');
+        fprintf('***********************************************************\n');
+        error('Input JSON field %s not valid. Check entry as described above.',field_nm);
+    end
 else
     error('quantify_dataset:MissingJSONentry',...
         'Field %s missing in the json file',field_nm);
 end
 
-function out_var = validate_opt_input(study_info,field_nm)
+function out_var = validate_opt_input(study_info,field_nm,varargin)
+type_entry = 'none';
+if nargin>2
+    type_entry = varargin{1};
+end
 % Validate existence of the field in the JSON file
 out_var = '';
 if isfield(study_info,field_nm)
     out_var     = study_info.(field_nm);
-    % else
-    %  warning('quantify_dataset:OptionalJSONentry',...
-    %  'Optional field %s missing in %s',field_nm,study_info_json);
+    if ~strcmp(type_entry,'none') && ~exist(out_var,type_entry)
+        fprintf('\n*********************** WRONG INPUT *********************\n');
+        fprintf('***   The program could not find the entry associated to the field "%s" : \n',field_nm);
+        fprintf('***   %s is either : \n',out_var);
+        fprintf('***   not existing or typed incorrectly : \n');
+        fprintf('*************************************************************\n');
+        error('Input JSON field %s not valid. Check entry as described above.',field_nm);
+    end
 end
 
 function ctn_out = keep_images(ctn_in)
