@@ -60,6 +60,9 @@ else
     end
     if ~isempty(original_dir)
         ori_dir_ctn = dir([original_dir '*.tif']); % restricted to tif for a good reason
+        if isempty(ori_dir_ctn)
+            ori_dir_ctn = dir([original_dir '*.txt']);
+        end
     end
     if ~isempty(allen_json) && exist(allen_json,'file')
         allen = loadjson(allen_json);

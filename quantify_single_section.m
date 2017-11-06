@@ -97,6 +97,9 @@ for iL = 1:n_obj
         if is_spinfo
             obj_stats(iR).object_area     = stats(iL).Area * pixel_area_dw;
             obj_stats(iR).object_area_units = [metadata.pixel_size_unit 'x' metadata.pixel_size_unit];
+        else
+            obj_stats(iR).object_area     = NaN;
+            obj_stats(iR).object_area_units = 'Undefined';
         end
         
         %Location properties (x,y)
