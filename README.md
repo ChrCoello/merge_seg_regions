@@ -15,19 +15,27 @@ The workflow can be decomposed in four steps, described in the workflow.
 The first step (`quantify_dataset.m`) is to generate a list of all the individual objects together with the region they belong to. The second step (`combine_obj_seg.m`) is to combine these individual objects to obtain regional information. The third step (optional, `combine_hierarchy.m`) is to gather regions following a hierarchy to generate results at a coarse regional level.
 
 ## Usage
+
 **Classify segmented maps as individual objects** : generate list of individual objects and its associated regions
 ```matlabsession
 >> study_info_fn = 'C:\data\test\cs\study_info.json';
 >> study_objects = quantify_dataset(study_info_fn);
 ```
+
 **Combine objects per region** : combine these individual objects to obtain regional information
 ```matlabsession
 >> study_objects_region = combine_obj_reg(study_objects);
 ```
+
 **Combine regions using a hierarchy** : combine regions following a user defined hierarchy
+```matlabsession
+>> combine_hierarchy(study_objects_region);
+```
+If there was a need to add/modify the study_info content (for exmaple to add or modify the "hier_dir" argument), then it is necessary to feed the study_info.json file back to the progam by adding it as second argument of the combine_hierarchy function call :
 ```matlabsession
 >> combine_hierarchy(study_objects_region,study_info_fn);
 ```
+
 **Generate text files for Meshview** : list the atlas centroid coordinates of the individual objects in a Meshview friendly way
 ```matlabsession
 >> json2mv(study_objects_region);
@@ -49,7 +57,8 @@ The input is formatted as a JSON file. This JSON file is referred as `study_info
 }
 ```
 ### Required inputs
-Please refer to the [Naming standards](#nam_std)
+Please refer to the [Naming standards](#nam_std) paragraph for the requirements in term of naming.
+
 * **"study_name"** the name of the study that will be used to name the output files
 
 * **"slice_dir"**  a folder containing the section image files from which the segmentation had been done. Image format accepted are jpg, tif and png.
@@ -93,7 +102,6 @@ The output files will be written in the **"output_dir"** folder. The structure o
   * qc_fig/ : folder containing the figures/images created during the classification procedure
   * sp_query/ : folder containing a cleaned version of the list of individual objects for spatial query purposes (work with Darius, EPFL)
   * meshview_ind_reg/ : folder containing the individual txt files per region for Meshview
-
 
 **List of individual objects** a list of individual objects and its associated regions as a JSON file. The name of the file is composed of "study_name" followed by *\_objects.json* and is located in "output_dir". Each object have the following fields:
 
