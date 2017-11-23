@@ -1,5 +1,5 @@
 function [obj_stats,seg_stats,features] = quantify_single_section(atlas,seg,slice,...
-    atlas_lbl,output_dir,obj_lbl,metadata)
+    output_dir,obj_lbl,curr_atlas,metadata)
 %QUANTIFY_SINGLE_SECTION quantify objects in a section
 % Takes resolution from the original text file
 % Calculates the downscale ratio using original and downscale height and
@@ -18,45 +18,39 @@ function [obj_stats,seg_stats,features] = quantify_single_section(atlas,seg,slic
 slice_im = imread(slice);
 slice_im_size = size(slice_im);
 
-%%% Get the pixel area in the downsampled image (def: no info)
-is_spinfo = 0;
-if ~(isempty(metadata.x_pixel_size) && isempty(metadata.y_pixel_size))
-    % we have some info
-    is_spinfo = 1;
-    if ~(isempty(metadata.width) && isempty(metadata.height))
-        % area
-        area_up = metadata.width * metadata.height;
-        area_dw = slice_im_size(1) * slice_im_size(2);
-        % pixel
-        pixel_area_up = metadata.x_pixel_size*metadata.y_pixel_size;
-        % all good
-        pixel_area_dw = pixel_area_up*area_up/area_dw;
-    else
-        pixel_area_dw = metadata.x_pixel_size * metadata.y_pixel_size;
-    end
-end
-
-%%%  Read the atlas segmentation and color the slice
+%%% Read the atlas segmentation and color the slice
 atlas_im = ReadSlice(atlas);
+atlas_orig_size = size(atlas_im);
+
+%%% Resize the atlas to the size of the section
 atlas_im = imresize(atlas_im,slice_im_size(1:2),'method','nearest');
 atlas_im_size = size(atlas_im);
-[atlas_im_rgb,lbl_lst,lbl_idx,lbl_pixel,lbl_clr] = colorAtlasImages(atlas_im,atlas_lbl);
-% make it a structure
+
+%%% Get the pixel area in the downsampled image (def: no info)
+pixel_dim        = curr_atlas.pixel_resolution*(atlas_orig_size(2)./slice_im_size(2));
+pixel_area       = pixel_dim*pixel_dim;
+pixel_area_units = curr_atlas.pixel_resolution_unit;
+
+%%% Color the bin image
+[atlas_im_rgb,lbl_lst,lbl_idx,lbl_pixel,lbl_clr] = colorAtlasImages(atlas_im,curr_atlas.atlas_lbl_file);
+
+%%% Make it a structure
 for iR = 1:length(lbl_lst)
     seg_stats(iR).name  = lbl_lst{iR};
     seg_stats(iR).idx   = lbl_idx(iR);
     seg_stats(iR).rgb   = lbl_clr(iR,:);
     seg_stats(iR).pixel = lbl_pixel(iR);
-    if is_spinfo
-        seg_stats(iR).area  = lbl_pixel(iR) * pixel_area_dw;
-        seg_stats(iR).area_units = [metadata.pixel_size_unit 'x' metadata.pixel_size_unit];
-    end
+    seg_stats(iR).area  = lbl_pixel(iR) * pixel_area;
+    seg_stats(iR).area_units = [pixel_area_units 'x' pixel_area_units];
 end
 
 %% Read the segmentation and create a object binary file
 [~,sl_name,~] = fileparts(seg);
-seg_im = imread(seg);
-seg_im_size   = size(seg_im);
+[seg_im,seg_cmap] = imread(seg);
+if size(seg_im,3)>1
+    seg_im = rgb2ind(seg_im,seg_cmap,'nodither');
+end
+seg_im_size = size(seg_im);
 obj_im = zeros(size(seg_im),'like',seg_im);
 obj_im(seg_im==obj_lbl) = 1;
 
@@ -94,35 +88,40 @@ for iL = 1:n_obj
         %%% Label connected regions
         % Area properties
         obj_stats(iR).object_pixel    = stats(iL).Area; %#ok<*AGROW>
-        if is_spinfo
-            obj_stats(iR).object_area     = stats(iL).Area * pixel_area_dw;
-            obj_stats(iR).object_area_units = [metadata.pixel_size_unit 'x' metadata.pixel_size_unit];
-        else
-            obj_stats(iR).object_area     = NaN;
-            obj_stats(iR).object_area_units = 'Undefined';
-        end
+        obj_stats(iR).object_area     = stats(iL).Area * pixel_area;
+        obj_stats(iR).object_area_units = [pixel_area_units 'x' pixel_area_units];
         
         %Location properties (x,y)
         obj_stats(iR).object_centroid_pixel = stats(iL).Centroid;
         
         %Location in ABA space: careful with centroid coordinates (x,y) and
         %image size (height(vertical) width(horizontal)) and atlas standards
+        if ~(isempty(metadata.o_vec) || isempty(metadata.u_vec) || isempty(metadata.v_vec))
         objcentpix_height_width_norm =...
             [obj_stats(iR).object_centroid_pixel(2),...
             obj_stats(iR).object_centroid_pixel(1)]./seg_im_size;
+        if strcmpi(curr_atlas.orientation(1),'l')
         obj_stats(iR).object_centroid_atlas = metadata.o_vec +...
                     metadata.u_vec * objcentpix_height_width_norm(2) +...
+                    metadata.v_vec * (1-objcentpix_height_width_norm(1));
+        
+        else
+                    obj_stats(iR).object_centroid_atlas = metadata.o_vec +...
+                    metadata.u_vec * objcentpix_height_width_norm(2) +...
                     metadata.v_vec * objcentpix_height_width_norm(1);
-        obj_stats(iR).object_centroid_atlas_units = 'ABA voxel 25um';
+        end
+        obj_stats(iR).object_atlas_anchored = curr_atlas.name;
+        end
+        
         % Verification that the coordinates calculated are within the ABA
         % space size
-        if ~all(obj_stats(iR).object_centroid_atlas < metadata.atlas_size)
+        if ~all(obj_stats(iR).object_centroid_atlas < curr_atlas.dim)
             % Bad news, just put NaNs
             obj_stats(iR).object_centroid_atlas = [NaN NaN NaN];
         end
         
         %Shape properties
-        obj_stats(iR).object_ori      = stats(iL).Orientation;
+        obj_stats(iR).object_ori            = stats(iL).Orientation;
         obj_stats(iR).object_major_al_pixel = stats(iL).MajorAxisLength;
         obj_stats(iR).object_minor_al_pixel = stats(iL).MinorAxisLength;
         % Intensity properties
