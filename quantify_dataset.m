@@ -27,64 +27,24 @@ end
 %%% Parsing required name/value pair from JSON
 study_name     = validate_input(study_info,'study_name');
 slice_dir      = validate_input(study_info,'slice_dir','dir');
-% slice_ori      = validate_input(study_info,'slice_ori');
 atlas_dir      = validate_input(study_info,'atlas_dir','dir');
 atlas_name     = validate_input(study_info,'atlas_name');
+atlas_lbl_file = validate_input(study_info,'atlas_lbl_file','file');
 seg_dir        = validate_input(study_info,'seg_dir','dir');
 obj_lbl        = validate_input(study_info,'obj_lbl');
 output_dir     = validate_input(study_info,'output_dir','dir');
 atlas_xml_file = validate_input(study_info,'atlas_xml_file','file');
 
 %%% Parsing atlas list JSON
-if exist('C:\data\GitHub\merge_seg_regions\atlas_list.json','file')
-    atlas_list   = loadjson('C:\data\GitHub\merge_seg_regions\atlas_list.json');
+if exist('atlas_list.json','file')
+    atlas_list   = loadjson('atlas_list.json');
     atlas_struct = [atlas_list.atlases{:}];
     curr_atlas   = atlas_struct(strcmp({atlas_struct(:).name},atlas_name));
 else
-    error('sfsdfsd');
+    error('quantify_dataset:NoAtlasInfoFound',['The file containing',...
+        ' the information about the atlases could not be found. It should',... 
+        ' be placed in the same folder as the Matlab scripts.']) 
 end
-
-
-
-% %%% Parsing optional name/value pair from JSON
-% original_dir   = validate_opt_input(study_info,'original_dir','dir');
-% allen_json     = validate_opt_input(study_info,'allen_json','file');
-% pixel_dim      = validate_opt_input(study_info,'pixel_dim');
-
-%
-% % Take care of the real world mess
-% is_spinfo = 0;
-% if isempty(original_dir) && isempty(allen_json) && isempty(pixel_dim)
-%     warning('quantify_dataset:NoSpatialInformation',...
-%         ['No entries in the study info JSON file allows for calculation ',...
-%         'of real world distances. Only pixel stats will be generated'])
-% else
-%     is_spinfo = 1;
-%     if ~isempty(original_dir) && ~isempty(allen_json) ||...
-%             ~isempty(original_dir) && ~isempty(pixel_dim) ||...
-%             ~isempty(pixel_dim) && ~isempty(allen_json)
-%         error('quantify_dataset:TooManyOptionalInputsForSpatialInformation',...
-%             ['Several entries in the study info JSON file allows for calcualtion ',...
-%             'of real world distances: original_dir, allen_json or pixel_dir .',...
-%             'Please keep only one of the two entries'])
-%     end
-%     if ~isempty(original_dir)
-%         ori_dir_ctn = dir([original_dir '*.tif']); % restricted to tif for a good reason
-%         if isempty(ori_dir_ctn)
-%             ori_dir_ctn = dir([original_dir '*.txt']);
-%         end
-%     end
-%     if ~isempty(allen_json) && exist(allen_json,'file')
-%         allen = loadjson(allen_json);
-%         allen_sec = [allen.msg{1}.section_images{:}];
-%     end
-%     if ~isempty(pixel_dim) && isnumeric(pixel_dim)
-%         %you are happy
-%         fprintf('\n Common resolution is used: pixel area %0.2fx%0.2f micrometers',...
-%             pixel_dim,pixel_dim);
-%     end
-% end
-
 
 %%% Get info on system and start filling the output structure GlobalStats
 tic;
@@ -177,10 +137,6 @@ for iS = 1:n_slice
     slice_name = slice_dir_ctn(~cellfun('isempty',strfind({slice_dir_ctn(:).name},seg_id))).name;
     slice_name_file = fullfile(slice_dir,slice_name);
 
-    % Fetch the resolution of the input section
-    % either in the metadata file or in the txt file or in the tif file
-%     metadata.slice_ori = slice_ori;
-
     %%% Transformation vectors and matrix
     anchoring_data = struct('pixel_to_atlas_mat',[],...
         'o_vec',[],...
@@ -203,6 +159,7 @@ for iS = 1:n_slice
         
 
     %%% we have everything we need: calling quantify_single_section
+    curr_atlas.atlas_lbl_file = atlas_lbl_file;
     [obj_stats,reg_stats,sp_stats] = quantify_single_section(atlas_name_file,...
         seg_name_file,...
         slice_name_file,...
@@ -393,27 +350,27 @@ else
 end
 
 
-% function out_var = validate_opt_input(study_info,field_nm,varargin)
-% type_entry = 'none';
-% if nargin>2
-%     type_entry = varargin{1};
-% end
-% % Validate existence of the field in the JSON file
-% out_var = '';
-% if isfield(study_info,field_nm)
-%     out_var     = study_info.(field_nm);
-%     if ~strcmp(type_entry,'none') && ~exist(out_var,type_entry)
-%         fprintf('\n*********************** WRONG INPUT IN JSON ****************\n');
-%         fprintf('*** The program could not find the entry associated to the field "%s" : \n',field_nm);
-%         fprintf('*** %s\n',out_var);
-%         fprintf('*** is either : \n')
-%         fprintf('***  -> not existing \n');
-%         fprintf('*** or\n'); 
-%         fprintf('***  -> typed incorrectly \n');
-%         fprintf('*************************************************************\n');
-%         error('Input JSON field %s not valid. Check entry as described above.',field_nm);
-%     end
-% end
+function out_var = validate_opt_input(study_info,field_nm,varargin)
+type_entry = 'none';
+if nargin>2
+    type_entry = varargin{1};
+end
+% Validate existence of the field in the JSON file
+out_var = '';
+if isfield(study_info,field_nm)
+    out_var     = study_info.(field_nm);
+    if ~strcmp(type_entry,'none') && ~exist(out_var,type_entry)
+        fprintf('\n************** WRONG OPTIONAL INPUT IN JSON ****************\n');
+        fprintf('*** The program could not find the entry associated to the field "%s" : \n',field_nm);
+        fprintf('*** %s\n',out_var);
+        fprintf('*** is either : \n')
+        fprintf('***  -> not existing \n');
+        fprintf('*** or\n'); 
+        fprintf('***  -> typed incorrectly \n');
+        fprintf('*************************************************************\n');
+        warning('Input JSON field %s not valid. Check entry as described above.',field_nm);
+    end
+end
 
 function ctn_out = keep_images(ctn_in)
 %%% Get current image format list supported by the
