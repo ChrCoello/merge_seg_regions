@@ -78,9 +78,11 @@ assert(all(atlas_im_size(1:2)==seg_im_size(1:2)),...
 % properties for each connected component (object) in the binary image
 stats  = regionprops(logical(obj_im_cl),'Centroid','Area','BoundingBox',...
     'Orientation', 'MajorAxisLength','MinorAxisLength');
-statsR = regionprops(logical(obj_im_cl),slice_im(:,:,1),'MeanIntensity');
-statsG = regionprops(logical(obj_im_cl),slice_im(:,:,2),'MeanIntensity');
-statsB = regionprops(logical(obj_im_cl),slice_im(:,:,3),'MeanIntensity');
+
+%     statsR = regionprops(logical(obj_im_cl),slice_im(:,:,1),'MeanIntensity');
+%     statsG = regionprops(logical(obj_im_cl),slice_im(:,:,2),'MeanIntensity');
+%     statsB = regionprops(logical(obj_im_cl),slice_im(:,:,3),'MeanIntensity');
+
 % A = [stats.Area];
 n_obj = length(stats)-1;
 iR = 0;
@@ -107,13 +109,18 @@ for iL = 1:n_obj
         
         %Location in ABA space: careful with centroid coordinates (x,y) and
         %image size (height(vertical) width(horizontal)) and atlas standards
+        if exist('metadata','var') && ~isempty(metadata)
         objcentpix_height_width_norm =...
             [obj_stats(iR).object_centroid_pixel(2),...
             obj_stats(iR).object_centroid_pixel(1)]./seg_im_size;
         obj_stats(iR).object_centroid_atlas = metadata.o_vec +...
-                    metadata.u_vec * objcentpix_height_width_norm(2) +...
-                    metadata.v_vec * objcentpix_height_width_norm(1);
+            metadata.u_vec * objcentpix_height_width_norm(2) +...
+            metadata.v_vec * objcentpix_height_width_norm(1);
         obj_stats(iR).object_centroid_atlas_units = 'ABA voxel 25um';
+        else
+            obj_stats(iR).object_centroid_atlas = [NaN NaN NaN];
+            obj_stats(iR).object_centroid_atlas_units = '';
+        end
         % Verification that the coordinates calculated are within the ABA
         % space size
         if ~all(obj_stats(iR).object_centroid_atlas < metadata.atlas_size)
@@ -126,7 +133,7 @@ for iL = 1:n_obj
         obj_stats(iR).object_major_al_pixel = stats(iL).MajorAxisLength;
         obj_stats(iR).object_minor_al_pixel = stats(iL).MinorAxisLength;
         % Intensity properties
-        obj_stats(iR).object_RGB_mean = [statsR(iL).MeanIntensity statsG(iL).MeanIntensity statsB(iL).MeanIntensity];
+        %obj_stats(iR).object_RGB_mean = [statsR(iL).MeanIntensity statsG(iL).MeanIntensity statsB(iL).MeanIntensity];
         % Region belonging properties
         obj_stats(iR).region_idx      = atlas_im(round(stats(iL).Centroid(2)),round(stats(iL).Centroid(1)));
         obj_stats(iR).region_name     = lbl_lst{lbl_idx==obj_stats(iR).region_idx};
@@ -143,101 +150,104 @@ for iL = 1:n_obj
         features(iR).geometry.space = 'WHS_SD_rat_v1.01';
         features(iR).properties.id = obj_stats(iR).slice_name;
         features(iR).properties.region_name_str = obj_stats(iR).region_name;
-        %    
+        %
     end
 end
-% Write images in a specific folder
-output_dir_img = fullfile(output_dir,'qc_fig');
-if ~exist(output_dir_img,'dir')
-    mkdir(output_dir_img);
-end
-%%%%%%%%%%%%%%%%%%%%%%%%%
-% Display the result for this slice using ellipses
-phi = linspace(0,2*pi,50);
-cosphi = cos(phi);
-sinphi = sin(phi);
-%
-warning('off', 'Images:initSize:adjustingMag');
-hF=figure;
-imshow(slice_im,'Border','tight');
-hold on
-centroids = cat(1, obj_stats.object_centroid_pixel);
-%
-for iC=1:length(centroids)
-    plot(centroids(iC,1),centroids(iC,2),'Color',obj_stats(iC).region_rgb,'Marker','x','MarkerSize',3);
+
+if size(slice_im,3)>1
+    % Write images in a specific folder
+    output_dir_img = fullfile(output_dir,'qc_fig');
+    if ~exist(output_dir_img,'dir')
+        mkdir(output_dir_img);
+    end
+    %%%%%%%%%%%%%%%%%%%%%%%%%
+    % Display the result for this slice using ellipses
+    phi = linspace(0,2*pi,50);
+    cosphi = cos(phi);
+    sinphi = sin(phi);
     %
-    xbar = centroids(iC,1);
-    ybar = centroids(iC,2);
-    
-    a = obj_stats(iC).object_major_al_pixel/2;
-    b = obj_stats(iC).object_minor_al_pixel/2;
-    
-    theta = pi*obj_stats(iC).object_ori/180;
-    R = [ cos(theta)   sin(theta)
-        -sin(theta)   cos(theta)];
-    
-    xy = [a*cosphi; b*sinphi];
-    xy = R*xy;
-    
-    x = xy(1,:) + xbar;
-    y = xy(2,:) + ybar;
+    warning('off', 'Images:initSize:adjustingMag');
+    hF=figure;
+    imshow(slice_im,'Border','tight');
+    hold on
+    centroids = cat(1, obj_stats.object_centroid_pixel);
     %
-    plot(x,y,'Color',obj_stats(iC).region_rgb,'LineWidth',1);
+    for iC=1:length(centroids)
+        plot(centroids(iC,1),centroids(iC,2),'Color',obj_stats(iC).region_rgb,'Marker','x','MarkerSize',3);
+        %
+        xbar = centroids(iC,1);
+        ybar = centroids(iC,2);
+        
+        a = obj_stats(iC).object_major_al_pixel/2;
+        b = obj_stats(iC).object_minor_al_pixel/2;
+        
+        theta = pi*obj_stats(iC).object_ori/180;
+        R = [ cos(theta)   sin(theta)
+            -sin(theta)   cos(theta)];
+        
+        xy = [a*cosphi; b*sinphi];
+        xy = R*xy;
+        
+        x = xy(1,:) + xbar;
+        y = xy(2,:) + ybar;
+        %
+        plot(x,y,'Color',obj_stats(iC).region_rgb,'LineWidth',1);
+        %
+    end
+    hold off
     %
+    F = getframe(hF);
+    imwrite(F.cdata,fullfile(output_dir_img,[sl_name '_classification.png']));
+    close(hF);
+    %%%%%%%%%%%%%%%%%%%%%%%%%
+    % Change atlas background to white
+    atlas_im_r  = uint8(ones(size(atlas_im_rgb,1),size(atlas_im_rgb,2))*255);
+    atlas_im_g  = uint8(ones(size(atlas_im_rgb,1),size(atlas_im_rgb,2))*255);
+    atlas_im_b  = uint8(ones(size(atlas_im_rgb,1),size(atlas_im_rgb,2))*255);
+    %
+    idx = (atlas_im_rgb(:,:,1)==0)&(atlas_im_rgb(:,:,2)==0)&(atlas_im_rgb(:,:,3)==0);
+    %
+    tmpr = atlas_im_rgb(:,:,1);
+    atlas_im_r(~idx) = tmpr(~idx);
+    tmpg = atlas_im_rgb(:,:,2);
+    atlas_im_g(~idx) = tmpg(~idx);
+    tmpb = atlas_im_rgb(:,:,3);
+    atlas_im_b(~idx) = tmpb(~idx);
+    %
+    atlas_im_rgb = cat(3,atlas_im_r,atlas_im_g,atlas_im_b);
+    %%%%%%%%%%%%%%%%%%%%%%%%%
+    % Plot the atlas
+    hF2=figure;
+    imshow(atlas_im_rgb,'Border','tight');
+    F2 = getframe(hF2);
+    imwrite(F2.cdata,fullfile(output_dir_img,[sl_name '_atlasrgb.png']));
+    close(hF2);
+    %%%%%%%%%%%%%%%%%%%%%%%%%
+    % Plot the blend
+    hF3=figure;
+    C=imlincomb(0.4,atlas_im_rgb,0.6,slice_im);
+    imshow(C,'Border','tight');
+    F3 = getframe(hF3);
+    imwrite(F3.cdata,fullfile(output_dir_img,[sl_name '_blend.png']));
+    close(hF3);
+    %%%%%%%%%%%%%%%%%%%%%%%%%
+    % Plot all together
+    %%%%%%%%%%%%%%%%%%%%%%%%%
+    % Plot the blend
+    hF4=figure;
+    C=imlincomb(0.4,atlas_im_rgb,0.6,slice_im);
+    imshow(C,'Border','tight');
+    hold on
+    centroids = cat(1, obj_stats.object_centroid_pixel);
+    %
+    for iC=1:length(centroids)
+        plot(centroids(iC,1),centroids(iC,2),'Color',[0 0 0],'Marker','x','MarkerSize',3);
+    end
+    hold off
+    F4 = getframe(hF4);
+    imwrite(F4.cdata,fullfile(output_dir_img,[sl_name '_blend_objects.png']));
+    close(hF4);
 end
-hold off
-%
-F = getframe(hF);
-imwrite(F.cdata,fullfile(output_dir_img,[sl_name '_classification.png']));
-close(hF);
-%%%%%%%%%%%%%%%%%%%%%%%%%
-% Change atlas background to white
-atlas_im_r  = uint8(ones(size(atlas_im_rgb,1),size(atlas_im_rgb,2))*255);
-atlas_im_g  = uint8(ones(size(atlas_im_rgb,1),size(atlas_im_rgb,2))*255);
-atlas_im_b  = uint8(ones(size(atlas_im_rgb,1),size(atlas_im_rgb,2))*255);
-%
-idx = (atlas_im_rgb(:,:,1)==0)&(atlas_im_rgb(:,:,2)==0)&(atlas_im_rgb(:,:,3)==0);
-%
-tmpr = atlas_im_rgb(:,:,1);
-atlas_im_r(~idx) = tmpr(~idx);
-tmpg = atlas_im_rgb(:,:,2);
-atlas_im_g(~idx) = tmpg(~idx);
-tmpb = atlas_im_rgb(:,:,3);
-atlas_im_b(~idx) = tmpb(~idx);
-%
-atlas_im_rgb = cat(3,atlas_im_r,atlas_im_g,atlas_im_b);
-%%%%%%%%%%%%%%%%%%%%%%%%%
-% Plot the atlas
-hF2=figure;
-imshow(atlas_im_rgb,'Border','tight');
-F2 = getframe(hF2);
-imwrite(F2.cdata,fullfile(output_dir_img,[sl_name '_atlasrgb.png']));
-close(hF2);
-%%%%%%%%%%%%%%%%%%%%%%%%%
-% Plot the blend
-hF3=figure;
-C=imlincomb(0.4,atlas_im_rgb,0.6,slice_im);
-imshow(C,'Border','tight');
-F3 = getframe(hF3);
-imwrite(F3.cdata,fullfile(output_dir_img,[sl_name '_blend.png']));
-close(hF3);
-%%%%%%%%%%%%%%%%%%%%%%%%%
-% Plot all together
-%%%%%%%%%%%%%%%%%%%%%%%%%
-% Plot the blend
-hF4=figure;
-C=imlincomb(0.4,atlas_im_rgb,0.6,slice_im);
-imshow(C,'Border','tight');
-hold on
-centroids = cat(1, obj_stats.object_centroid_pixel);
-%
-for iC=1:length(centroids)
-    plot(centroids(iC,1),centroids(iC,2),'Color',[0 0 0],'Marker','x','MarkerSize',3);
-end
-hold off
-F4 = getframe(hF4);
-imwrite(F4.cdata,fullfile(output_dir_img,[sl_name '_blend_objects.png']));
-close(hF4);
 
 % Prepare the output
 obj_stats = obj_stats';

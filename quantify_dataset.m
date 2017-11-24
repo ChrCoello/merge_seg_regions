@@ -117,7 +117,11 @@ slice_dir_ctn     = keep_images(slice_dir_ctn_raw);
 if ~isempty(atlas_xml_file) && exist(atlas_xml_file,'file')
     atlas_json_fn    = xmlcoord2jsonmat(atlas_xml_file);
     atlas_coord_json = loadjson(atlas_json_fn);
+    if length(atlas_coord_json.slice)==1
+        sections_coord   = atlas_coord_json.slice;
+    else        
     sections_coord   = [atlas_coord_json.slice{:}];
+    end
 else
     sections_coord   = [];
 end
