@@ -7,44 +7,23 @@
       "pixel_resolution": 25.0,
       "pixel_resolution_unit": "um",
       "dim": [456,528,320],
-      "orientation": "RAI",
-      "atlas_lbl_file": "C:\\data\\CrossSeeds\\m287\\6_reslicedAtlasTemplate\\tg2576_m287_1D1\\annotation.label"
+      "orientation": "RAI"
     },
     {
       "id": 2,
-      "name": "allen_mouse_25_reduced",
-      "pixel_resolution": 25.0,
-      "pixel_resolution_unit": "um",
-      "dim": [456,528,320],
-      "orientation": "RAI",
-      "atlas_lbl_file": "Z:\\data\\CrossSeeds\\m287\\6_reslicedAtlasTemplate\\tg2576_m287_1D1\\annotation.label"
-    },
-    {
-      "id": 3,
       "name": "allen_mouse_10",
       "pixel_resolution": 10.0,
       "pixel_resolution_unit": "um",
       "dim": [1140,1320,800],
-      "orientation": "RAI",
-      "atlas_lbl_file": "Z:\\data\\CrossSeeds\\m287\\6_reslicedAtlasTemplate\\tg2576_m287_1D1\\annotation.label"
+      "orientation": "RAI"
     },
     {
-      "id": 4,
-      "name": "waxholm_rat_v2",
+      "id": 3,
+      "name": "waxholm_rat",
       "pixel_resolution": 39.0625,
       "pixel_resolution_unit": "um",
       "dim": [512,1024,512],
-      "orientation": "LPI",
-      "atlas_lbl_file": "C:\\data\\CrossSeeds\\rat\\CrossSeeds_6_766_2724_3446\\Atlas\\WHS_SD_rat_atlas_v2.label"
-    },
-    {
-      "id": 5,
-      "name": "waxholm_rat_v3",
-      "pixel_resolution": 39.0625,
-      "pixel_resolution_unit": "um",
-      "dim": [512,1024,512],
-      "orientation": "LPI",
-      "atlas_lbl_file": "Z:\\data\\CrossSeeds\\m287\\6_reslicedAtlasTemplate\\tg2576_m287_1D1\\annotation.label"
+      "orientation": "LPI"
     }
   ]
 }
